@@ -1844,25 +1844,127 @@
 
         <!-- SHORT LIST TAB -->
         <div id="shortlist" class="tab-content">
-            <div style="margin-bottom: 20px; display: flex; gap: 10px; align-items: center;">
+            <div style="margin-bottom: 15px; display: flex; gap: 10px; align-items: center; flex-wrap: wrap;">
                 <label style="color: var(--text-muted); font-size: 13px;">View:</label>
                 <button class="btn" id="viewToggleTile" onclick="toggleShortListView('tile')" title="Tile view">🔲 Tiles</button>
                 <button class="btn" id="viewToggleTable" onclick="toggleShortListView('table')" title="Table view">📊 Table</button>
+                <span style="margin-left: auto; color: var(--text-muted); font-size: 12px;" id="shortlistCount"></span>
+            </div>
+
+            <!-- SHORT LIST FILTERS -->
+            <div class="filter-panel" style="margin-bottom: 20px;">
+                <div class="filter-row" style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 15px; margin-bottom: 10px;">
+                    <div>
+                        <label class="filter-label">COST SYNERGIES</label>
+                        <select id="slFilterCostSynergies" onchange="renderShortListFiltered()" style="width:100%; padding:8px; background:var(--bg-secondary); color:var(--text-primary); border:1px solid var(--border);">
+                            <option value="">All</option>
+                            <option value="Strong">Strong</option>
+                            <option value="Moderate">Moderate</option>
+                            <option value="Weak">Weak</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="filter-label">CROSS SELLING</label>
+                        <select id="slFilterCrossSelling" onchange="renderShortListFiltered()" style="width:100%; padding:8px; background:var(--bg-secondary); color:var(--text-primary); border:1px solid var(--border);">
+                            <option value="">All</option>
+                            <option value="Strong">Strong</option>
+                            <option value="Moderate">Moderate</option>
+                            <option value="Weak">Weak</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="filter-label">FINANCIAL STABILITY</label>
+                        <select id="slFilterFinancialStability" onchange="renderShortListFiltered()" style="width:100%; padding:8px; background:var(--bg-secondary); color:var(--text-primary); border:1px solid var(--border);">
+                            <option value="">All</option>
+                            <option value="Strong">Strong</option>
+                            <option value="Stable">Stable</option>
+                            <option value="Weak">Weak</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="filter-label">CASH GENERATION</label>
+                        <select id="slFilterCashGeneration" onchange="renderShortListFiltered()" style="width:100%; padding:8px; background:var(--bg-secondary); color:var(--text-primary); border:1px solid var(--border);">
+                            <option value="">All</option>
+                            <option value="Strong">Strong</option>
+                            <option value="Moderate">Moderate</option>
+                            <option value="Weak">Weak</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="filter-row" style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 15px;">
+                    <div>
+                        <label class="filter-label">KEY PEOPLE RISK</label>
+                        <select id="slFilterKeyPeopleRisk" onchange="renderShortListFiltered()" style="width:100%; padding:8px; background:var(--bg-secondary); color:var(--text-primary); border:1px solid var(--border);">
+                            <option value="">All</option>
+                            <option value="Low risk">Low risk</option>
+                            <option value="Medium risk">Medium risk</option>
+                            <option value="High risk">High risk</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="filter-label">CUSTOMER CONCENTRATION</label>
+                        <select id="slFilterCustomerConcentration" onchange="renderShortListFiltered()" style="width:100%; padding:8px; background:var(--bg-secondary); color:var(--text-primary); border:1px solid var(--border);">
+                            <option value="">All</option>
+                            <option value="Low">Low</option>
+                            <option value="Moderate">Moderate</option>
+                            <option value="High">High</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="filter-label">INTEGRATABILITY</label>
+                        <select id="slFilterIntegratability" onchange="renderShortListFiltered()" style="width:100%; padding:8px; background:var(--bg-secondary); color:var(--text-primary); border:1px solid var(--border);">
+                            <option value="">All</option>
+                            <option value="Simple/strong">Simple/strong</option>
+                            <option value="Moderate">Moderate</option>
+                            <option value="Complex">Complex</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="filter-label">ACCREDITATIONS</label>
+                        <select id="slFilterAccreditations" onchange="renderShortListFiltered()" style="width:100%; padding:8px; background:var(--bg-secondary); color:var(--text-primary); border:1px solid var(--border);">
+                            <option value="">All</option>
+                            <option value="Existing">Existing</option>
+                            <option value="New">New</option>
+                            <option value="None">None</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="filter-row" style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 15px; margin-top: 10px;">
+                    <div>
+                        <label class="filter-label">STAGE 2 SCORE MIN</label>
+                        <input type="number" id="slFilterScoreMin" placeholder="Min" onchange="renderShortListFiltered()" style="width:100%; padding:8px; background:var(--bg-secondary); color:var(--text-primary); border:1px solid var(--border);">
+                    </div>
+                    <div>
+                        <label class="filter-label">STAGE 2 SCORE MAX</label>
+                        <input type="number" id="slFilterScoreMax" placeholder="Max" onchange="renderShortListFiltered()" style="width:100%; padding:8px; background:var(--bg-secondary); color:var(--text-primary); border:1px solid var(--border);">
+                    </div>
+                    <div style="display:flex; align-items:flex-end;">
+                        <button class="btn" onclick="clearShortListFilters()" style="width:100%;">Clear Filters</button>
+                    </div>
+                </div>
             </div>
 
             <div id="shortlistTableWrapper" class="table-wrapper hidden">
-                <table id="shortlistTable">
+                <div style="padding: 8px 0; font-size: 13px; color: var(--text-muted);"><span id="shortlistCompanyCount"></span></div>
+                <table id="shortlistTable" style="font-size: 12px;">
                     <thead>
                         <tr>
-                            <th>Company Name</th>
-                            <th>Score</th>
-                            <th>Region</th>
-                            <th>Employees</th>
+                            <th style="min-width:140px;">Company</th>
+                            <th>S1</th>
+                            <th>S2</th>
+                            <th>Total</th>
+                            <th>Cost Syn.</th>
+                            <th>Cross Sell</th>
+                            <th>Fin. Stab.</th>
+                            <th>Cash Gen.</th>
+                            <th>People Risk</th>
+                            <th>Cust. Conc.</th>
+                            <th>Integrat.</th>
+                            <th>Accred.</th>
                             <th>Revenue</th>
                             <th>EBITDA</th>
-                            <th>EBITDA Margin</th>
-                            <th>Key Services</th>
-                            <th>R1 / R2</th>
+                            <th>Margin</th>
+                            <th>Emp.</th>
                             <th>Actions</th>
                         </tr>
                     </thead>
@@ -3275,36 +3377,138 @@ const companiesData = {"longList":[{"name":"CITY SURVEYS & MONITORING LTD (XRAIL
             }
         }
 
+        function getCompanyCriterionValue(company, key) {
+            const overrides = getShortListScore(company.name);
+            if (overrides[key]) return overrides[key];
+            if (company[key]) return company[key];
+            return '';
+        }
+
+        function getCriterionScoreNum(key, value) {
+            if (!value) return 0;
+            const criteria = secondStageCriteria[key];
+            return criteria ? (criteria.scores[value] || 0) : 0;
+        }
+
+        function calcS2Total(company) {
+            let total = 0;
+            Object.keys(secondStageCriteria).forEach(key => {
+                total += getCriterionScoreNum(key, getCompanyCriterionValue(company, key));
+            });
+            return total;
+        }
+
+        function getFilteredShortList() {
+            let companies = allCompanies.filter(c => starredCompanies.has(c.name));
+
+            const criteriaFilters = {
+                costSynergies: document.getElementById('slFilterCostSynergies')?.value || '',
+                crossSelling: document.getElementById('slFilterCrossSelling')?.value || '',
+                financialStability: document.getElementById('slFilterFinancialStability')?.value || '',
+                cashGeneration: document.getElementById('slFilterCashGeneration')?.value || '',
+                keyPeopleRisk: document.getElementById('slFilterKeyPeopleRisk')?.value || '',
+                customerConcentration: document.getElementById('slFilterCustomerConcentration')?.value || '',
+                integratability: document.getElementById('slFilterIntegratability')?.value || '',
+                accreditations: document.getElementById('slFilterAccreditations')?.value || ''
+            };
+
+            const scoreMin = parseFloat(document.getElementById('slFilterScoreMin')?.value) || 0;
+            const scoreMax = parseFloat(document.getElementById('slFilterScoreMax')?.value) || 999;
+
+            companies = companies.filter(company => {
+                for (const [key, filterVal] of Object.entries(criteriaFilters)) {
+                    if (filterVal && getCompanyCriterionValue(company, key) !== filterVal) return false;
+                }
+                const s2 = calcS2Total(company);
+                if (s2 < scoreMin || s2 > scoreMax) return false;
+                return true;
+            });
+
+            return companies;
+        }
+
+        function renderShortListFiltered() {
+            renderShortListTable();
+        }
+
+        function clearShortListFilters() {
+            ['slFilterCostSynergies','slFilterCrossSelling','slFilterFinancialStability','slFilterCashGeneration','slFilterKeyPeopleRisk','slFilterCustomerConcentration','slFilterIntegratability','slFilterAccreditations'].forEach(id => {
+                const el = document.getElementById(id);
+                if (el) el.value = '';
+            });
+            const minEl = document.getElementById('slFilterScoreMin');
+            const maxEl = document.getElementById('slFilterScoreMax');
+            if (minEl) minEl.value = '';
+            if (maxEl) maxEl.value = '';
+            renderShortListTable();
+        }
+
+        function updateShortListCriterion(companyName, key, value) {
+            if (!shortListScores[companyName]) shortListScores[companyName] = {};
+            shortListScores[companyName][key] = value;
+            saveShortListScores();
+            renderShortListTable();
+            renderShortList();
+        }
+
+        function buildCriterionSelect(company, key) {
+            const criteria = secondStageCriteria[key];
+            const currentVal = getCompanyCriterionValue(company, key);
+            const escapedName = company.name.replace(/'/g, "\\'");
+            let html = '<select onchange="updateShortListCriterion(\'' + escapedName + '\',\'' + key + '\',this.value)" style="padding:3px 4px;font-size:11px;background:var(--bg-secondary);color:var(--text-primary);border:1px solid var(--border);border-radius:4px;width:100%;">';
+            html += '<option value="">—</option>';
+            criteria.options.forEach(opt => {
+                const score = criteria.scores[opt] || 0;
+                html += '<option value="' + opt + '"' + (currentVal === opt ? ' selected' : '') + '>' + opt + ' (' + score + ')</option>';
+            });
+            html += '</select>';
+            return html;
+        }
+
         function renderShortListTable() {
             const tbody = document.getElementById('shortlistTableBody');
             if (!tbody) return;
             tbody.innerHTML = '';
 
-            const shortlistedCompanies = allCompanies.filter(c => starredCompanies.has(c.name));
+            const companies = getFilteredShortList();
+            const countEl = document.getElementById('shortlistCompanyCount');
+            const totalShortlisted = allCompanies.filter(c => starredCompanies.has(c.name)).length;
+            if (countEl) countEl.textContent = companies.length + ' of ' + totalShortlisted + ' companies';
 
-            shortlistedCompanies.forEach(company => {
-                const scoreClass = company.score >= 20 ? 'high' : company.score >= 10 ? 'medium' : 'low';
-                const ebitdaMargin = company.revenue && company.ebitda ? 
+            companies.forEach(company => {
+                const s1 = company.score || 0;
+                const s2 = calcS2Total(company);
+                const s2Max = Object.keys(secondStageCriteria).length * 3;
+                const total = s1 + s2;
+                const s1Class = s1 >= 20 ? 'high' : s1 >= 10 ? 'medium' : 'low';
+                const s2Pct = s2 / s2Max;
+                const s2Class = s2Pct >= 0.7 ? 'high' : s2Pct >= 0.4 ? 'medium' : 'low';
+                const ebitdaMargin = company.revenue && company.ebitda ?
                     ((company.ebitda / company.revenue) * 100).toFixed(1) + '%' : '—';
+                const escapedName = company.name.replace(/'/g, "\\'");
 
                 const row = document.createElement('tr');
-                row.innerHTML = `
-                    <td><strong>${company.name}</strong></td>
-                    <td><div class="score-bar ${scoreClass}">${company.score}</div></td>
-                    <td>${company.region || '—'}</td>
-                    <td>${company.employees || '—'}</td>
-                    <td>${formatCurrency(company.revenue ? Math.round(company.revenue / 1000) : '—')}</td>
-                    <td>${formatCurrency(company.ebitda ? Math.round(company.ebitda / 1000) : '—')}</td>
-                    <td>${ebitdaMargin}</td>
-                    <td style="font-size: 12px; color: var(--text-muted);">${company.speciality || company.keyServices || '—'}</td>
-                    <td>${company.r1 || '—'} / ${company.r2 || '—'}</td>
-                    <td>
-                        <div class="action-buttons">
-                            <button class="btn btn-small" onclick="viewCompanyDetail('${company.name.replace(/'/g, "\\'")}')">👁</button>
-                            <button class="btn btn-small btn-danger" onclick="unstarCompany('${company.name.replace(/'/g, "\\'")}')">✕</button>
-                        </div>
-                    </td>
-                `;
+                row.innerHTML = '<td><strong>' + company.name + '</strong></td>' +
+                    '<td><div class="score-bar ' + s1Class + '">' + s1 + '</div></td>' +
+                    '<td><div class="score-bar ' + s2Class + '">' + s2 + '/' + s2Max + '</div></td>' +
+                    '<td><strong>' + total + '</strong></td>' +
+                    '<td>' + buildCriterionSelect(company, 'costSynergies') + '</td>' +
+                    '<td>' + buildCriterionSelect(company, 'crossSelling') + '</td>' +
+                    '<td>' + buildCriterionSelect(company, 'financialStability') + '</td>' +
+                    '<td>' + buildCriterionSelect(company, 'cashGeneration') + '</td>' +
+                    '<td>' + buildCriterionSelect(company, 'keyPeopleRisk') + '</td>' +
+                    '<td>' + buildCriterionSelect(company, 'customerConcentration') + '</td>' +
+                    '<td>' + buildCriterionSelect(company, 'integratability') + '</td>' +
+                    '<td>' + buildCriterionSelect(company, 'accreditations') + '</td>' +
+                    '<td>' + formatCurrency(company.revenue ? Math.round(company.revenue / 1000) : '—') + '</td>' +
+                    '<td>' + formatCurrency(company.ebitda ? Math.round(company.ebitda / 1000) : '—') + '</td>' +
+                    '<td>' + ebitdaMargin + '</td>' +
+                    '<td>' + (company.employees || '—') + '</td>' +
+                    '<td><div class="action-buttons">' +
+                        '<button class="btn btn-small" onclick="viewCompanyDetail(\'' + escapedName + '\')" title="View details">👁</button>' +
+                        '<button class="btn btn-small" onclick="openSecondStageModal(\'' + escapedName + '\')" title="Edit scoring">📊</button>' +
+                        '<button class="btn btn-small btn-danger" onclick="unstarCompany(\'' + escapedName + '\')" title="Remove">✕</button>' +
+                    '</div></td>';
                 tbody.appendChild(row);
             });
         }
