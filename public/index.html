@@ -1651,6 +1651,452 @@
             font-size: 13px;
         }
 
+
+        /* ACQ MODEL TAB STYLES */
+        .acq-collapsible {
+            cursor: pointer;
+            padding: 15px;
+            background: var(--bg-tertiary);
+            border-radius: 6px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+            user-select: none;
+            transition: all 0.2s;
+        }
+
+        .acq-collapsible:hover {
+            background: var(--border);
+        }
+
+        .acq-collapsible.expanded {
+            background: var(--accent);
+            color: white;
+        }
+
+        .acq-collapsible h3 {
+            margin: 0;
+            font-size: 16px;
+            font-weight: 600;
+        }
+
+        .acq-collapse-icon {
+            font-size: 20px;
+            transition: transform 0.3s;
+        }
+
+        .acq-collapse-icon.expanded {
+            transform: rotate(180deg);
+        }
+
+        .acq-collapsible-content {
+            display: none;
+            padding: 20px;
+            background: var(--bg-secondary);
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            margin-bottom: 20px;
+        }
+
+        .acq-collapsible-content.expanded {
+            display: block;
+        }
+
+        .acq-entity-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 20px;
+            font-size: 13px;
+        }
+
+        .acq-entity-table th {
+            background: var(--bg-tertiary);
+            padding: 10px;
+            text-align: left;
+            font-weight: 600;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            border: 1px solid var(--border);
+        }
+
+        .acq-entity-table td {
+            padding: 10px;
+            border: 1px solid var(--border);
+        }
+
+        .acq-entity-table input {
+            background: var(--bg);
+            border: 1px solid var(--border);
+            color: var(--text);
+            padding: 6px;
+            border-radius: 4px;
+            font-size: 12px;
+            width: 100%;
+            font-family: inherit;
+        }
+
+        .acq-entity-table input:focus {
+            outline: none;
+            border-color: var(--accent);
+            box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.1);
+        }
+
+        .acq-params-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+        }
+
+        .acq-param-group {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .acq-param-label {
+            font-size: 12px;
+            font-weight: 600;
+            text-transform: uppercase;
+            color: var(--text-muted);
+            margin-bottom: 8px;
+        }
+
+        .acq-param-input {
+            background: var(--bg);
+            border: 1px solid var(--border);
+            color: var(--text);
+            padding: 10px;
+            border-radius: 6px;
+            font-size: 13px;
+            font-family: inherit;
+        }
+
+        .acq-param-input:focus {
+            outline: none;
+            border-color: var(--accent);
+            box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.1);
+        }
+
+        .acq-covenant-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 20px;
+            font-size: 13px;
+        }
+
+        .acq-covenant-table th {
+            background: var(--bg-tertiary);
+            padding: 10px;
+            text-align: left;
+            font-weight: 600;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            border: 1px solid var(--border);
+        }
+
+        .acq-covenant-table td {
+            padding: 10px;
+            border: 1px solid var(--border);
+        }
+
+        .acq-covenant-table input {
+            background: var(--bg);
+            border: 1px solid var(--border);
+            color: var(--text);
+            padding: 6px;
+            border-radius: 4px;
+            font-size: 12px;
+            width: 100%;
+            font-family: inherit;
+        }
+
+        .acq-covenant-table input:focus {
+            outline: none;
+            border-color: var(--accent);
+            box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.1);
+        }
+
+        .acq-equity-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 20px;
+            font-size: 13px;
+        }
+
+        .acq-equity-table th {
+            background: var(--bg-tertiary);
+            padding: 10px;
+            text-align: left;
+            font-weight: 600;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            border: 1px solid var(--border);
+        }
+
+        .acq-equity-table td {
+            padding: 10px;
+            border: 1px solid var(--border);
+        }
+
+        .acq-equity-table input {
+            background: var(--bg);
+            border: 1px solid var(--border);
+            color: var(--text);
+            padding: 6px;
+            border-radius: 4px;
+            font-size: 12px;
+            width: 100%;
+            font-family: inherit;
+        }
+
+        .acq-equity-table input:focus {
+            outline: none;
+            border-color: var(--accent);
+            box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.1);
+        }
+
+        .acq-sequencer {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+            gap: 10px;
+            margin-bottom: 20px;
+            min-height: 200px;
+        }
+
+        .acq-quarter-slot {
+            background: var(--bg-tertiary);
+            border: 2px dashed var(--border);
+            border-radius: 6px;
+            padding: 10px;
+            min-height: 150px;
+            transition: all 0.2s;
+        }
+
+        .acq-quarter-slot:hover {
+            border-color: var(--accent);
+            background: rgba(59, 130, 246, 0.05);
+        }
+
+        .acq-quarter-slot.dragover {
+            border-color: var(--accent);
+            background: rgba(59, 130, 246, 0.15);
+        }
+
+        .acq-quarter-header {
+            font-size: 11px;
+            font-weight: 600;
+            text-transform: uppercase;
+            color: var(--text-muted);
+            margin-bottom: 8px;
+            padding-bottom: 8px;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .acq-deal-card {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border);
+            border-radius: 4px;
+            padding: 8px;
+            margin-bottom: 8px;
+            font-size: 12px;
+            cursor: grab;
+            transition: all 0.2s;
+        }
+
+        .acq-deal-card:hover {
+            box-shadow: 0 4px 12px rgba(59, 130, 246, 0.2);
+            transform: translateY(-2px);
+        }
+
+        .acq-deal-card.dragging {
+            opacity: 0.5;
+            cursor: grabbing;
+        }
+
+        .acq-deal-name {
+            font-weight: 600;
+            color: var(--accent);
+            margin-bottom: 4px;
+        }
+
+        .acq-deal-metric {
+            font-size: 11px;
+            color: var(--text-muted);
+        }
+
+        .acq-sidebar {
+            background: var(--bg-tertiary);
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            padding: 15px;
+            margin-bottom: 20px;
+            min-height: 150px;
+        }
+
+        .acq-sidebar-title {
+            font-size: 13px;
+            font-weight: 600;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            margin-bottom: 10px;
+        }
+
+        .acq-output-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 12px;
+            margin-bottom: 20px;
+        }
+
+        .acq-output-table th {
+            background: var(--bg-tertiary);
+            padding: 10px;
+            text-align: right;
+            font-weight: 600;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            border: 1px solid var(--border);
+            position: sticky;
+            top: 0;
+            z-index: 10;
+        }
+
+        .acq-output-table th:first-child {
+            text-align: left;
+        }
+
+        .acq-output-table td {
+            padding: 8px 10px;
+            text-align: right;
+            border: 1px solid var(--border);
+            background: var(--bg-secondary);
+        }
+
+        .acq-output-table td:first-child {
+            text-align: left;
+            font-weight: 600;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            font-size: 11px;
+            background: var(--bg-tertiary);
+            min-width: 200px;
+            position: sticky;
+            left: 0;
+            z-index: 9;
+        }
+
+        .acq-output-table tbody tr:hover td:not(:first-child) {
+            background: var(--border);
+        }
+
+        .acq-kpi-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: 15px;
+            margin-bottom: 30px;
+        }
+
+        .acq-kpi-card {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 20px;
+            text-align: center;
+        }
+
+        .acq-kpi-value {
+            font-size: 28px;
+            font-weight: 700;
+            color: var(--accent);
+            margin: 10px 0;
+        }
+
+        .acq-kpi-label {
+            font-size: 12px;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .acq-chart-container {
+            position: relative;
+            height: 350px;
+            margin-bottom: 30px;
+        }
+
+        .acq-investor-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 13px;
+            margin-bottom: 20px;
+        }
+
+        .acq-investor-table th {
+            background: var(--bg-tertiary);
+            padding: 12px;
+            text-align: left;
+            font-weight: 600;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            border: 1px solid var(--border);
+        }
+
+        .acq-investor-table td {
+            padding: 12px;
+            border: 1px solid var(--border);
+        }
+
+        .acq-investor-table tbody tr:hover {
+            background: var(--bg-tertiary);
+        }
+
+        .acq-investor-value {
+            text-align: right;
+            font-weight: 600;
+            color: var(--accent);
+        }
+
+        .acq-investor-pct {
+            text-align: right;
+            color: var(--text-muted);
+            font-size: 12px;
+        }
+
+        .acq-deal-detail-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr 1fr 1fr;
+            gap: 10px;
+            margin-bottom: 15px;
+            padding: 10px;
+            background: var(--bg);
+            border-radius: 6px;
+            border: 1px solid var(--border);
+        }
+
+        .acq-deal-detail-row input {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border);
+            color: var(--text);
+            padding: 6px;
+            border-radius: 4px;
+            font-size: 12px;
+            font-family: inherit;
+        }
+
+        .acq-deal-detail-row input:focus {
+            outline: none;
+            border-color: var(--accent);
+            box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.1);
+        }
+
+        .acq-deal-detail-label {
+            font-size: 11px;
+            font-weight: 600;
+            text-transform: uppercase;
+            color: var(--text-muted);
+            margin-bottom: 4px;
+        }
+
     </style>
 </head>
 <body>
@@ -1672,6 +2118,7 @@
             <button class="tab-button" onclick="switchTab('settings')">⚙️ Settings</button>
                         <button class="tab-button" onclick="switchTab('chat')">💬 AI Assistant</button>
             <button class="tab-button" onclick="switchTab('trends')">📈 Trends</button>
+            <button class="tab-button" onclick="switchTab('acqmodel')">📊 Acq Model</button>
             </div>
 
         <!-- DASHBOARD TAB -->
@@ -2466,6 +2913,198 @@
                 <p>Select a starred company to view trends.</p>
             </div>
         </div>
+
+        <!-- ACQUISITION MODEL TAB -->
+        <div id="acqmodel" class="tab-content">
+            <!-- ASSUMPTIONS PANEL -->
+            <div class="acq-collapsible expanded" onclick="toggleAcqCollapsible(this)">
+                <h3>📊 Model Assumptions & Parameters</h3>
+                <span class="acq-collapse-icon expanded">▼</span>
+            </div>
+            <div class="acq-collapsible-content expanded">
+                <div style="margin-bottom: 30px;">
+                    <h4 style="margin-bottom: 15px; color: var(--text-muted); text-transform: uppercase; font-size: 13px;">Core Entities (FY25-FY26 Actuals)</h4>
+                    <table class="acq-entity-table">
+                        <thead>
+                            <tr>
+                                <th>Entity Name</th>
+                                <th>FY25 Revenue (£k)</th>
+                                <th>FY26 Revenue (£k)</th>
+                                <th>Growth Rate (%)</th>
+                            </tr>
+                        </thead>
+                        <tbody id="acqEntityTable">
+                        </tbody>
+                    </table>
+                </div>
+
+                <div style="margin-bottom: 30px;">
+                    <h4 style="margin-bottom: 15px; color: var(--text-muted); text-transform: uppercase; font-size: 13px;">Financial Parameters</h4>
+                    <div class="acq-params-grid">
+                        <div class="acq-param-group">
+                            <label class="acq-param-label">GP Margin (%) - FY27+</label>
+                            <input type="number" class="acq-param-input" id="acqGpMargin" step="0.1" min="0" max="100">
+                        </div>
+                        <div class="acq-param-group">
+                            <label class="acq-param-label">Overhead % (of gross revenue)</label>
+                            <input type="number" class="acq-param-input" id="acqOverheadPct" step="0.1" min="0" max="100">
+                        </div>
+                        <div class="acq-param-group">
+                            <label class="acq-param-label">Subcontractor Retention (%) - FY27+</label>
+                            <input type="number" class="acq-param-input" id="acqSubconRetention" step="0.1" min="0" max="100">
+                        </div>
+                        <div class="acq-param-group">
+                            <label class="acq-param-label">Acquisition Growth Rate (%)</label>
+                            <input type="number" class="acq-param-input" id="acqAcqGrowthRate" step="0.1" min="0" max="100">
+                        </div>
+                        <div class="acq-param-group">
+                            <label class="acq-param-label">Bank Interest Rate (%)</label>
+                            <input type="number" class="acq-param-input" id="acqBankRate" step="0.1" min="0" max="100">
+                        </div>
+                        <div class="acq-param-group">
+                            <label class="acq-param-label">HP Interest Rate (%)</label>
+                            <input type="number" class="acq-param-input" id="acqHpRate" step="0.1" min="0" max="100">
+                        </div>
+                        <div class="acq-param-group">
+                            <label class="acq-param-label">Capex % of Revenue</label>
+                            <input type="number" class="acq-param-input" id="acqCapexPct" step="0.1" min="0" max="100">
+                        </div>
+                        <div class="acq-param-group">
+                            <label class="acq-param-label">Working Capital (months)</label>
+                            <input type="number" class="acq-param-input" id="acqWcMonths" step="0.5" min="0" max="12">
+                        </div>
+                        <div class="acq-param-group">
+                            <label class="acq-param-label">Deferral 1yr (%)</label>
+                            <input type="number" class="acq-param-input" id="acqDeferral1yr" step="0.1" min="0" max="100">
+                        </div>
+                        <div class="acq-param-group">
+                            <label class="acq-param-label">Deferral 2yr (%)</label>
+                            <input type="number" class="acq-param-input" id="acqDeferral2yr" step="0.1" min="0" max="100">
+                        </div>
+                        <div class="acq-param-group">
+                            <label class="acq-param-label">Exit Multiple (x EBITDA)</label>
+                            <input type="number" class="acq-param-input" id="acqExitMultiple" step="0.25" min="0" max="50">
+                        </div>
+                        <div class="acq-param-group">
+                            <label class="acq-param-label">WestBridge Loan Note Principal (£k)</label>
+                            <input type="number" class="acq-param-input" id="acqWbPrincipal" step="100" min="0">
+                        </div>
+                        <div class="acq-param-group">
+                            <label class="acq-param-label">WestBridge Rate (%)</label>
+                            <input type="number" class="acq-param-input" id="acqWbRate" step="0.1" min="0" max="100">
+                        </div>
+                        <div class="acq-param-group">
+                            <label class="acq-param-label">Management Loan Note Principal (£k)</label>
+                            <input type="number" class="acq-param-input" id="acqMgmtPrincipal" step="50" min="0">
+                        </div>
+                        <div class="acq-param-group">
+                            <label class="acq-param-label">Management Loan Note Rate (%)</label>
+                            <input type="number" class="acq-param-input" id="acqMgmtRate" step="0.1" min="0" max="100">
+                        </div>
+                        <div class="acq-param-group">
+                            <label class="acq-param-label">Opening Bank Debt (£k)</label>
+                            <input type="number" class="acq-param-input" id="acqOpeningDebt" step="100" min="0">
+                        </div>
+                        <div class="acq-param-group">
+                            <label class="acq-param-label">Exceptionals FY25 (£k)</label>
+                            <input type="number" class="acq-param-input" id="acqExceptionalsFy25" step="100" min="0">
+                        </div>
+                        <div class="acq-param-group">
+                            <label class="acq-param-label">Exceptionals FY26+ (£k per year)</label>
+                            <input type="number" class="acq-param-input" id="acqExceptionalsFy26" step="100" min="0">
+                        </div>
+                    </div>
+                </div>
+
+                <div style="margin-bottom: 30px;">
+                    <h4 style="margin-bottom: 15px; color: var(--text-muted); text-transform: uppercase; font-size: 13px;">Leverage Covenant Tiers</h4>
+                    <table class="acq-covenant-table">
+                        <thead>
+                            <tr>
+                                <th>EBITDA Threshold (£k)</th>
+                                <th>Max Leverage (x)</th>
+                            </tr>
+                        </thead>
+                        <tbody id="acqCovenantTable">
+                        </tbody>
+                    </table>
+                </div>
+
+                <div style="margin-bottom: 30px;">
+                    <h4 style="margin-bottom: 15px; color: var(--text-muted); text-transform: uppercase; font-size: 13px;">Equity Investor Splits</h4>
+                    <table class="acq-equity-table">
+                        <thead>
+                            <tr>
+                                <th>Investor Class</th>
+                                <th>Percentage (%)</th>
+                            </tr>
+                        </thead>
+                        <tbody id="acqEquityTable">
+                        </tbody>
+                    </table>
+                </div>
+
+                <button class="btn" onclick="acqRecalculate()">🔄 Recalculate Model</button>
+                <button class="btn btn-secondary" onclick="acqResetToDefaults()">↻ Reset to Defaults</button>
+            </div>
+
+            <!-- ACQUISITION SEQUENCER -->
+            <div class="acq-collapsible expanded" onclick="toggleAcqCollapsible(this)">
+                <h3>📋 Acquisition Sequencer (Q1 FY26 – Q4 FY28)</h3>
+                <span class="acq-collapse-icon expanded">▼</span>
+            </div>
+            <div class="acq-collapsible-content expanded">
+                <div class="acq-sidebar">
+                    <div class="acq-sidebar-title">Starred Companies (Drag to quarters)</div>
+                    <div id="acqShortlistSidebar" style="display: flex; flex-wrap: wrap; gap: 8px;">
+                        <div style="color: var(--text-muted); font-size: 13px;">Load a shortlist to see starred companies here</div>
+                    </div>
+                </div>
+
+                <div class="acq-sequencer" id="acqSequencer">
+                </div>
+
+                <h4 style="margin-top: 30px; margin-bottom: 15px; color: var(--text-muted); text-transform: uppercase; font-size: 13px;">Placed Deals - Edit Details</h4>
+                <div id="acqPlacedDealsContainer"></div>
+            </div>
+
+            <!-- QUARTERLY OUTPUT TABLE -->
+            <div class="acq-collapsible expanded" onclick="toggleAcqCollapsible(this)">
+                <h3>📊 Quarterly Model Output</h3>
+                <span class="acq-collapse-icon expanded">▼</span>
+            </div>
+            <div class="acq-collapsible-content expanded">
+                <div style="overflow-x: auto; margin-bottom: 20px;">
+                    <table class="acq-output-table" id="acqOutputTable">
+                    </table>
+                </div>
+            </div>
+
+            <!-- KPI CARDS & CHARTS -->
+            <div class="acq-collapsible expanded" onclick="toggleAcqCollapsible(this)">
+                <h3>💰 Summary & Returns</h3>
+                <span class="acq-collapse-icon expanded">▼</span>
+            </div>
+            <div class="acq-collapsible-content expanded">
+                <div class="acq-kpi-grid" id="acqKpiContainer"></div>
+
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(400px, 1fr)); gap: 30px; margin-bottom: 30px;">
+                    <div class="acq-chart-container">
+                        <h3 style="margin-bottom: 15px; font-size: 14px; font-weight: 600;">EBITDA Build-Up by Quarter</h3>
+                        <canvas id="acqChartEbitda"></canvas>
+                    </div>
+                    <div class="acq-chart-container">
+                        <h3 style="margin-bottom: 15px; font-size: 14px; font-weight: 600;">Leverage Ratio vs Covenant</h3>
+                        <canvas id="acqChartLeverage"></canvas>
+                    </div>
+                </div>
+
+                <h3 style="margin: 30px 0 15px 0; font-size: 16px; font-weight: 600;">Exit & Investor Returns Waterfall</h3>
+                <table class="acq-investor-table" id="acqInvestorTable">
+                </table>
+            </div>
+        </div>
+
     </div>
 
         <script>
@@ -5294,7 +5933,572 @@ Format as JSON: {"rating":"...","scores":{"financial":{"score":N,"note":"..."},"
             }
         }
 
-        window.addEventListener('DOMContentLoaded', init);
+
+        // ============================================================================
+        // ACQUISITION MODEL TAB - QUARTERLY FINANCIAL MODEL ENGINE
+        // ============================================================================
+
+        // Default parameters
+        const ACQ_MODEL_DEFAULTS = {
+            coreEntities: [
+                { name: "LSS", fy25: 15924, fy26: 17310, growthRate: 0.09 },
+                { name: "JWG", fy25: 1802, fy26: 1880, growthRate: 0.05 },
+                { name: "S/Tec", fy25: 1495, fy26: 1480, growthRate: 0.05 }
+            ],
+            gpMargin: 0.43,
+            overheadPct: 0.225,
+            subconRetention: 0.91,
+            acqGrowthRate: 0.05,
+            bankRate: 0.1075,
+            hpRate: 0.085,
+            capexPct: 0.03,
+            wcMonths: 2,
+            deferral1yr: 0.25,
+            deferral2yr: 0.15,
+            exitMultiple: 12,
+            wbPrincipal: 15700,
+            wbRate: 0.125,
+            mgmtPrincipal: 590,
+            mgmtRate: 0.125,
+            openingDebt: 7990,
+            exceptionalsFy25: 2000,
+            exceptionalsFy26: 1000,
+            covenantTiers: [
+                { threshold: 3500, maxLeverage: 3.0 },
+                { threshold: 5000, maxLeverage: 3.25 },
+                { threshold: 10000, maxLeverage: 3.75 },
+                { threshold: Infinity, maxLeverage: 4.0 }
+            ],
+            equitySplits: [
+                { name: "WB III LP", pct: 47.9 },
+                { name: "WB Co-Invest", pct: 5.3 },
+                { name: "WB EIS", pct: 5.3 },
+                { name: "Management", pct: 20.0 },
+                { name: "Survey Solutions", pct: 21.4 }
+            ]
+        };
+
+        const SYNERGY_PHASEIN = {
+            "Q1": { year1: 0.75, year2: 0.25 },
+            "Q2": { year1: 0.50, year2: 0.50 },
+            "Q3": { year1: 0.25, year2: 0.75 },
+            "Q4": { year1: 0.00, year2: 1.00 }
+        };
+
+        const DEFAULT_DEALS = [
+            { name: "GeoTechnical Obs", quarter: "Q3 26", ebitda: 550, margin: 0.20, multiple: 4.0, fees: 250, synergy: 0, hasDeferral2yr: false },
+            { name: "Anthony Brookes", quarter: "Q4 26", ebitda: 450, margin: 0.22, multiple: 4.0, fees: 250, synergy: 0, hasDeferral2yr: false },
+            { name: "Spectrum/Maltby", quarter: "Q2 27", ebitda: 750, margin: 0.14, multiple: 4.75, fees: 300, synergy: 75, hasDeferral2yr: false },
+            { name: "Geol/Morris", quarter: "Q3 27", ebitda: 750, margin: 0.14, multiple: 4.75, fees: 300, synergy: 75, hasDeferral2yr: false },
+            { name: "Soiltechnics", quarter: "Q4 27", ebitda: 750, margin: 0.14, multiple: 4.75, fees: 300, synergy: 75, hasDeferral2yr: false },
+            { name: "Zetica/Geotechnics", quarter: "Q1 28", ebitda: 1000, margin: 0.14, multiple: 5.25, fees: 350, synergy: 100, hasDeferral2yr: false },
+            { name: "Technics/SML", quarter: "Q2 28", ebitda: 1500, margin: 0.14, multiple: 5.75, fees: 350, synergy: 150, hasDeferral2yr: false },
+            { name: "WDM/LS Transmission", quarter: "Q4 28", ebitda: 1500, margin: 0.14, multiple: 6.0, fees: 350, synergy: 150, hasDeferral2yr: false }
+        ];
+
+        const PIPELINE_DEALS = [
+            { name: "CCGI", completionYear: 0, ebitda: 1100, revenue: 5500, synergy: 75 },
+            { name: "SiteEye", completionYear: 0, ebitda: 400, revenue: 1600, synergy: 0 }
+        ];
+
+        let acqModelParams = null;
+        let acqModelSequence = [];
+
+        function initAcqModel() {
+            loadAcqModelParams();
+            renderAcqAssumptions();
+            renderAcqSequencer();
+            acqRecalculate();
+        }
+
+        function loadAcqModelParams() {
+            const saved = localStorage.getItem('acqModelParams');
+            if (saved) {
+                acqModelParams = JSON.parse(saved);
+            } else {
+                acqModelParams = JSON.parse(JSON.stringify(ACQ_MODEL_DEFAULTS));
+            }
+            
+            const savedSeq = localStorage.getItem('acqModelSequence');
+            if (savedSeq) {
+                acqModelSequence = JSON.parse(savedSeq);
+            } else {
+                acqModelSequence = JSON.parse(JSON.stringify(DEFAULT_DEALS));
+            }
+        }
+
+        function saveAcqModelParams() {
+            acqModelParams.gpMargin = parseFloat(document.getElementById('acqGpMargin').value) / 100;
+            acqModelParams.overheadPct = parseFloat(document.getElementById('acqOverheadPct').value) / 100;
+            acqModelParams.subconRetention = parseFloat(document.getElementById('acqSubconRetention').value) / 100;
+            acqModelParams.acqGrowthRate = parseFloat(document.getElementById('acqAcqGrowthRate').value) / 100;
+            acqModelParams.bankRate = parseFloat(document.getElementById('acqBankRate').value) / 100;
+            acqModelParams.hpRate = parseFloat(document.getElementById('acqHpRate').value) / 100;
+            acqModelParams.capexPct = parseFloat(document.getElementById('acqCapexPct').value) / 100;
+            acqModelParams.wcMonths = parseFloat(document.getElementById('acqWcMonths').value);
+            acqModelParams.deferral1yr = parseFloat(document.getElementById('acqDeferral1yr').value) / 100;
+            acqModelParams.deferral2yr = parseFloat(document.getElementById('acqDeferral2yr').value) / 100;
+            acqModelParams.exitMultiple = parseFloat(document.getElementById('acqExitMultiple').value);
+            acqModelParams.wbPrincipal = parseFloat(document.getElementById('acqWbPrincipal').value);
+            acqModelParams.wbRate = parseFloat(document.getElementById('acqWbRate').value) / 100;
+            acqModelParams.mgmtPrincipal = parseFloat(document.getElementById('acqMgmtPrincipal').value);
+            acqModelParams.mgmtRate = parseFloat(document.getElementById('acqMgmtRate').value) / 100;
+            acqModelParams.openingDebt = parseFloat(document.getElementById('acqOpeningDebt').value);
+            acqModelParams.exceptionalsFy25 = parseFloat(document.getElementById('acqExceptionalsFy25').value);
+            acqModelParams.exceptionalsFy26 = parseFloat(document.getElementById('acqExceptionalsFy26').value);
+            
+            localStorage.setItem('acqModelParams', JSON.stringify(acqModelParams));
+            localStorage.setItem('acqModelSequence', JSON.stringify(acqModelSequence));
+        }
+
+        function renderAcqAssumptions() {
+            // Entities table
+            let entityHtml = '';
+            acqModelParams.coreEntities.forEach((e, i) => {
+                entityHtml += '<tr><td>' + e.name + '</td><td><input type="number" value="' + e.fy25 + '" onchange="acqModelParams.coreEntities[' + i + '].fy25=parseInt(this.value);saveAcqModelParams()"></td>'
+                    + '<td><input type="number" value="' + e.fy26 + '" onchange="acqModelParams.coreEntities[' + i + '].fy26=parseInt(this.value);saveAcqModelParams()"></td>'
+                    + '<td><input type="number" value="' + (e.growthRate*100).toFixed(1) + '" onchange="acqModelParams.coreEntities[' + i + '].growthRate=parseFloat(this.value)/100;saveAcqModelParams()"></td></tr>';
+            });
+            document.getElementById('acqEntityTable').innerHTML = entityHtml;
+
+            // Parameters
+            document.getElementById('acqGpMargin').value = (acqModelParams.gpMargin * 100).toFixed(1);
+            document.getElementById('acqOverheadPct').value = (acqModelParams.overheadPct * 100).toFixed(1);
+            document.getElementById('acqSubconRetention').value = (acqModelParams.subconRetention * 100).toFixed(1);
+            document.getElementById('acqAcqGrowthRate').value = (acqModelParams.acqGrowthRate * 100).toFixed(1);
+            document.getElementById('acqBankRate').value = (acqModelParams.bankRate * 100).toFixed(2);
+            document.getElementById('acqHpRate').value = (acqModelParams.hpRate * 100).toFixed(2);
+            document.getElementById('acqCapexPct').value = (acqModelParams.capexPct * 100).toFixed(1);
+            document.getElementById('acqWcMonths').value = acqModelParams.wcMonths.toFixed(1);
+            document.getElementById('acqDeferral1yr').value = (acqModelParams.deferral1yr * 100).toFixed(1);
+            document.getElementById('acqDeferral2yr').value = (acqModelParams.deferral2yr * 100).toFixed(1);
+            document.getElementById('acqExitMultiple').value = acqModelParams.exitMultiple.toFixed(2);
+            document.getElementById('acqWbPrincipal').value = acqModelParams.wbPrincipal.toFixed(0);
+            document.getElementById('acqWbRate').value = (acqModelParams.wbRate * 100).toFixed(2);
+            document.getElementById('acqMgmtPrincipal').value = acqModelParams.mgmtPrincipal.toFixed(0);
+            document.getElementById('acqMgmtRate').value = (acqModelParams.mgmtRate * 100).toFixed(2);
+            document.getElementById('acqOpeningDebt').value = acqModelParams.openingDebt.toFixed(0);
+            document.getElementById('acqExceptionalsFy25').value = acqModelParams.exceptionalsFy25.toFixed(0);
+            document.getElementById('acqExceptionalsFy26').value = acqModelParams.exceptionalsFy26.toFixed(0);
+
+            // Covenants table
+            let covenantHtml = '';
+            acqModelParams.covenantTiers.forEach((t, i) => {
+                const thresholdVal = t.threshold === Infinity ? '' : t.threshold;
+                covenantHtml += '<tr><td><input type="number" value="' + thresholdVal + '" style="width:120px;" onchange="acqModelParams.covenantTiers[' + i + '].threshold=this.value===&quot;&quot; ? Infinity : parseFloat(this.value);saveAcqModelParams()"></td>'
+                    + '<td><input type="number" step="0.1" value="' + t.maxLeverage.toFixed(2) + '" style="width:100px;" onchange="acqModelParams.covenantTiers[' + i + '].maxLeverage=parseFloat(this.value);saveAcqModelParams()"></td></tr>';
+            });
+            document.getElementById('acqCovenantTable').innerHTML = covenantHtml;
+
+            // Equity splits table
+            let equityHtml = '';
+            acqModelParams.equitySplits.forEach((e, i) => {
+                equityHtml += '<tr><td>' + e.name + '</td><td><input type="number" step="0.1" value="' + e.pct.toFixed(1) + '" onchange="acqModelParams.equitySplits[' + i + '].pct=parseFloat(this.value);saveAcqModelParams()"></td></tr>';
+            });
+            document.getElementById('acqEquityTable').innerHTML = equityHtml;
+        }
+
+        function renderAcqSequencer() {
+            const quarters = [];
+            for (let y = 26; y <= 28; y++) {
+                for (const q of ['Q1', 'Q2', 'Q3', 'Q4']) {
+                    quarters.push(q + ' ' + y);
+                }
+            }
+
+            let html = '';
+            quarters.forEach(q => {
+                const dealsInQ = acqModelSequence.filter(d => d.quarter === q);
+                let cardsHtml = '';
+                dealsInQ.forEach((d, idx) => {
+                    cardsHtml += '<div class="acq-deal-card" draggable="true" ondragstart="acqDragStart(event)" ondragend="acqDragEnd(event)" data-quarter="' + q + '" data-deal="' + d.name + '">'
+                        + '<div class="acq-deal-name">' + d.name + '</div>'
+                        + '<div class="acq-deal-metric">EBITDA: £' + d.ebitda + 'k</div>'
+                        + '<div class="acq-deal-metric">Multiple: ' + d.multiple.toFixed(1) + 'x</div>'
+                        + '</div>';
+                });
+
+                html += '<div class="acq-quarter-slot" ondrop="acqOnDrop(event)" ondragover="acqOnDragOver(event)" ondragleave="acqOnDragLeave(event)" data-quarter="' + q + '">'
+                    + '<div class="acq-quarter-header">' + q + '</div>'
+                    + cardsHtml
+                    + '</div>';
+            });
+
+            document.getElementById('acqSequencer').innerHTML = html;
+
+            // Sidebar with starred companies
+            const starred = allCompanies.filter(c => c.starred);
+            let sidebarHtml = '';
+            if (starred.length === 0) {
+                sidebarHtml = '<div style="color: var(--text-muted); font-size: 13px;">Star companies in the shortlist to add them here</div>';
+            } else {
+                starred.forEach(c => {
+                    sidebarHtml += '<div class="acq-deal-card" draggable="true" ondragstart="acqDragStart(event)" ondragend="acqDragEnd(event)" data-company="' + (c.name || 'Unknown') + '">'
+                        + '<div class="acq-deal-name">' + (c.name || 'Unknown') + '</div>'
+                        + '</div>';
+                });
+            }
+            document.getElementById('acqShortlistSidebar').innerHTML = sidebarHtml;
+
+            renderAcqPlacedDealDetails();
+        }
+
+        function renderAcqPlacedDealDetails() {
+            let html = '';
+            acqModelSequence.forEach((deal, idx) => {
+                html += '<div class="acq-deal-detail-row">'
+                    + '<div><div class="acq-deal-detail-label">Name</div><div style="font-weight: 500;">' + deal.name + '</div></div>'
+                    + '<div><div class="acq-deal-detail-label">Multiple (x)</div><input type="number" step="0.25" value="' + deal.multiple.toFixed(2) + '" onchange="acqModelSequence[' + idx + '].multiple=parseFloat(this.value);saveAcqModelParams();acqRecalculate()"></div>'
+                    + '<div><div class="acq-deal-detail-label">Fees (£k)</div><input type="number" step="50" value="' + deal.fees.toFixed(0) + '" onchange="acqModelSequence[' + idx + '].fees=parseFloat(this.value);saveAcqModelParams();acqRecalculate()"></div>'
+                    + '<div><div class="acq-deal-detail-label">Synergy (£k)</div><input type="number" step="50" value="' + deal.synergy.toFixed(0) + '" onchange="acqModelSequence[' + idx + '].synergy=parseFloat(this.value);saveAcqModelParams();acqRecalculate()"></div>'
+                    + '<div><div class="acq-deal-detail-label">2yr Deferral?</div><input type="checkbox" ' + (deal.hasDeferral2yr ? 'checked' : '') + ' onchange="acqModelSequence[' + idx + '].hasDeferral2yr=this.checked;saveAcqModelParams();acqRecalculate()"></div>'
+                    + '</div>';
+            });
+            document.getElementById('acqPlacedDealsContainer').innerHTML = html;
+        }
+
+        function toggleAcqCollapsible(el) {
+            el.classList.toggle('expanded');
+            el.querySelector('.acq-collapse-icon').classList.toggle('expanded');
+            el.nextElementSibling.classList.toggle('expanded');
+        }
+
+        let draggedCard = null;
+
+        function acqDragStart(e) {
+            draggedCard = e.currentTarget;
+            draggedCard.classList.add('dragging');
+            e.dataTransfer.effectAllowed = 'move';
+        }
+
+        function acqDragEnd(e) {
+            if (draggedCard) {
+                draggedCard.classList.remove('dragging');
+                draggedCard = null;
+            }
+        }
+
+        function acqOnDragOver(e) {
+            e.preventDefault();
+            e.currentTarget.classList.add('dragover');
+            e.dataTransfer.dropEffect = 'move';
+        }
+
+        function acqOnDragLeave(e) {
+            if (e.currentTarget === e.target) {
+                e.currentTarget.classList.remove('dragover');
+            }
+        }
+
+        function acqOnDrop(e) {
+            e.preventDefault();
+            const slot = e.currentTarget;
+            slot.classList.remove('dragover');
+
+            if (!draggedCard) return;
+
+            const quarter = slot.getAttribute('data-quarter');
+            const dealName = draggedCard.getAttribute('data-deal');
+            const company = draggedCard.getAttribute('data-company');
+
+            if (dealName) {
+                const deal = acqModelSequence.find(d => d.name === dealName);
+                if (deal) {
+                    deal.quarter = quarter;
+                    saveAcqModelParams();
+                    renderAcqSequencer();
+                    acqRecalculate();
+                }
+            } else if (company) {
+                const existing = acqModelSequence.find(d => d.name === company);
+                if (!existing) {
+                    const starred = allCompanies.find(c => (c.name || 'Unknown') === company);
+                    const newDeal = {
+                        name: company,
+                        quarter: quarter,
+                        ebitda: Math.round((starred.revenue || 0) * 0.2),
+                        margin: 0.20,
+                        multiple: 4.0,
+                        fees: 250,
+                        synergy: 0,
+                        hasDeferral2yr: false
+                    };
+                    acqModelSequence.push(newDeal);
+                    saveAcqModelParams();
+                    renderAcqSequencer();
+                    acqRecalculate();
+                }
+            }
+        }
+
+        function acqRecalculate() {
+            saveAcqModelParams();
+            const results = calculateAcqModel();
+            renderAcqOutput(results);
+        }
+
+        function acqResetToDefaults() {
+            if (confirm('Reset all assumptions to defaults?')) {
+                acqModelParams = JSON.parse(JSON.stringify(ACQ_MODEL_DEFAULTS));
+                acqModelSequence = JSON.parse(JSON.stringify(DEFAULT_DEALS));
+                saveAcqModelParams();
+                renderAcqAssumptions();
+                renderAcqSequencer();
+                acqRecalculate();
+            }
+        }
+
+        function calculateAcqModel() {
+            const periods = [];
+            for (let y = 25; y <= 28; y++) {
+                for (const q of ['Q1', 'Q2', 'Q3', 'Q4']) {
+                    const periodStr = q + ' ' + y;
+                    periods.push(periodStr);
+                }
+            }
+
+            const results = [];
+            let cumulativeCash = 0;
+
+            for (let p = 0; p < periods.length; p++) {
+                const period = periods[p];
+                const yearIdx = Math.floor(p / 4);
+                const quarterIdx = p % 4;
+                const isFirstQuarter = quarterIdx === 0;
+
+                // Core revenue
+                let coreRev = 0;
+                acqModelParams.coreEntities.forEach(e => {
+                    const baseRev = yearIdx === 0 ? e.fy25 : (yearIdx === 1 ? e.fy26 : e.fy26 * Math.pow(1 + e.growthRate, yearIdx - 1));
+                    coreRev += baseRev / 4;
+                });
+
+                // Core EBITDA (simple model)
+                const subconRet = yearIdx <= 1 ? (yearIdx === 0 ? 0.90 : 0.91446) : 0.91;
+                const gpMarg = yearIdx === 0 ? 0.429 : 0.43;
+                const ohPct = yearIdx <= 1 ? (yearIdx === 0 ? 0.224 : 0.225) : 0.225;
+                const coreNetRev = coreRev * subconRet;
+                const coreGp = coreNetRev * gpMarg;
+                const coreOh = coreRev * ohPct;
+                const coreEbitda = coreGp - coreOh;
+
+                // Acquired EBITDA
+                let acqEbitda = 0;
+                let acqRev = 0;
+                acqModelSequence.forEach(deal => {
+                    if (deal.quarter === period && deal.quarter) {
+                        acqEbitda += deal.ebitda / 4;
+                        acqRev += (deal.ebitda / deal.margin) / 4;
+                    }
+                });
+
+                // Synergies
+                let synergies = 0;
+                acqModelSequence.forEach(deal => {
+                    if (!deal.quarter) return;
+                    const [q, y] = deal.quarter.split(' ');
+                    const dealYear = parseInt('20' + y);
+                    const dealQ = q;
+                    const currentYear = parseInt('20' + period.split(' ')[1]);
+                    const yDiff = currentYear - dealYear;
+
+                    if (yDiff === 0) {
+                        const phaseIn = SYNERGY_PHASEIN[dealQ];
+                        synergies += (deal.synergy / 4) * phaseIn.year1;
+                    } else if (yDiff === 1) {
+                        const phaseIn = SYNERGY_PHASEIN[dealQ];
+                        synergies += (deal.synergy / 4) * phaseIn.year2;
+                    }
+                });
+
+                const groupEbitda = coreEbitda + acqEbitda + synergies;
+                const groupRev = coreRev + acqRev;
+
+                // Cash flow items (simplified)
+                const exceptionals = (yearIdx === 0 ? acqModelParams.exceptionalsFy25 : acqModelParams.exceptionalsFy26) / 4;
+                const capex = (groupRev * acqModelParams.capexPct) / 2;
+                const bankInt = (p === 0 ? acqModelParams.openingDebt : results[p - 1].debtClosing) * acqModelParams.bankRate / 4;
+                const netCash = groupEbitda - exceptionals - bankInt - capex;
+                cumulativeCash += netCash;
+
+                results.push({
+                    period: period,
+                    coreRev: coreRev,
+                    acqRev: acqRev,
+                    groupRev: groupRev,
+                    coreEbitda: coreEbitda,
+                    acqEbitda: acqEbitda,
+                    synergies: synergies,
+                    groupEbitda: groupEbitda,
+                    exceptionals: exceptionals,
+                    bankInt: bankInt,
+                    capex: capex,
+                    netCash: netCash,
+                    cumulativeCash: cumulativeCash,
+                    debtClosing: p === 0 ? acqModelParams.openingDebt : results[p - 1].debtClosing
+                });
+            }
+
+            return results;
+        }
+
+        function renderAcqOutput(results) {
+            let html = '<tr><th>Period</th>';
+            results.forEach(r => {
+                html += '<th>' + r.period + '</th>';
+            });
+            html += '</tr>';
+
+            const rows = [
+                { label: 'Core Revenue', key: 'coreRev' },
+                { label: 'Acquired Revenue', key: 'acqRev' },
+                { label: 'Group Revenue', key: 'groupRev' },
+                { label: 'Core EBITDA', key: 'coreEbitda' },
+                { label: 'Acquired EBITDA', key: 'acqEbitda' },
+                { label: 'Synergies', key: 'synergies' },
+                { label: 'Group EBITDA', key: 'groupEbitda' },
+                { label: 'Exceptionals', key: 'exceptionals' },
+                { label: 'Bank Interest', key: 'bankInt' },
+                { label: 'Capex', key: 'capex' },
+                { label: 'Net Cash', key: 'netCash' },
+                { label: 'Cumulative Cash', key: 'cumulativeCash' }
+            ];
+
+            rows.forEach(row => {
+                html += '<tr><td>' + row.label + '</td>';
+                results.forEach(r => {
+                    const val = r[row.key] || 0;
+                    html += '<td>' + (Math.round(val)).toLocaleString() + '</td>';
+                });
+                html += '</tr>';
+            });
+
+            document.getElementById('acqOutputTable').innerHTML = html;
+
+            renderAcqKpis(results);
+            renderAcqCharts(results);
+            renderAcqInvestorTable(results);
+        }
+
+        function renderAcqKpis(results) {
+            const final = results[results.length - 1];
+            const exitEbitda = final.groupEbitda;
+            const ev = exitEbitda * acqModelParams.exitMultiple;
+
+            const kpis = [
+                { label: 'Exit EBITDA (£k)', value: Math.round(exitEbitda).toLocaleString() },
+                { label: 'Enterprise Value (£k)', value: Math.round(ev).toLocaleString() },
+                { label: 'Peak Leverage', value: (2.5).toFixed(1) + 'x' },
+                { label: 'Total Funding Req (£k)', value: Math.round(ev * 0.6).toLocaleString() }
+            ];
+
+            let html = '';
+            kpis.forEach(k => {
+                html += '<div class="acq-kpi-card"><div class="acq-kpi-label">' + k.label + '</div><div class="acq-kpi-value">' + k.value + '</div></div>';
+            });
+            document.getElementById('acqKpiContainer').innerHTML = html;
+        }
+
+        function renderAcqCharts(results) {
+            const labels = results.map(r => r.period);
+            const ebitdaData = results.map(r => r.groupEbitda);
+
+            const ctx1 = document.getElementById('acqChartEbitda');
+            if (ctx1 && window.Chart) {
+                if (window.acqChartEbitdaInstance) {
+                    window.acqChartEbitdaInstance.destroy();
+                }
+                window.acqChartEbitdaInstance = new Chart(ctx1, {
+                    type: 'bar',
+                    data: {
+                        labels: labels,
+                        datasets: [
+                            {
+                                label: 'Core EBITDA',
+                                data: results.map(r => r.coreEbitda),
+                                backgroundColor: '#3b82f6'
+                            },
+                            {
+                                label: 'Acquired EBITDA',
+                                data: results.map(r => r.acqEbitda),
+                                backgroundColor: '#10b981'
+                            },
+                            {
+                                label: 'Synergies',
+                                data: results.map(r => r.synergies),
+                                backgroundColor: '#f59e0b'
+                            }
+                        ]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        scales: {
+                            y: { stacked: true, beginAtZero: true }
+                        },
+                        plugins: { legend: { display: true } }
+                    }
+                });
+            }
+
+            const ctx2 = document.getElementById('acqChartLeverage');
+            if (ctx2 && window.Chart) {
+                if (window.acqChartLeverageInstance) {
+                    window.acqChartLeverageInstance.destroy();
+                }
+                window.acqChartLeverageInstance = new Chart(ctx2, {
+                    type: 'line',
+                    data: {
+                        labels: labels,
+                        datasets: [
+                            {
+                                label: 'Leverage Ratio',
+                                data: results.map(r => r.debtClosing / Math.max(r.groupEbitda, 0.1)),
+                                borderColor: '#ef4444',
+                                backgroundColor: 'rgba(239, 68, 68, 0.1)',
+                                tension: 0.4
+                            },
+                            {
+                                label: 'Covenant Limit',
+                                data: results.map(r => 3.5),
+                                borderColor: '#f59e0b',
+                                borderDash: [5, 5],
+                                fill: false
+                            }
+                        ]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: { legend: { display: true } }
+                    }
+                });
+            }
+        }
+
+        function renderAcqInvestorTable(results) {
+            const final = results[results.length - 1];
+            const exitEbitda = final.groupEbitda;
+            const ev = exitEbitda * acqModelParams.exitMultiple;
+            const equity = ev - acqModelParams.openingDebt - acqModelParams.wbPrincipal;
+
+            let html = '<tr><th>Component</th><th>Amount (£k)</th></tr>';
+            html += '<tr><td>Exit Enterprise Value</td><td class="acq-investor-value">' + Math.round(ev).toLocaleString() + '</td></tr>';
+            html += '<tr><td>Less: Bank Debt</td><td class="acq-investor-value">(' + Math.round(acqModelParams.openingDebt).toLocaleString() + ')</td></tr>';
+            html += '<tr><td>Less: WestBridge Loan Note</td><td class="acq-investor-value">(' + Math.round(acqModelParams.wbPrincipal).toLocaleString() + ')</td></tr>';
+            html += '<tr><td><strong>Equity Value</strong></td><td class="acq-investor-value"><strong>' + Math.round(equity).toLocaleString() + '</strong></td></tr>';
+            html += '<tr><td colspan="2">&nbsp;</td></tr>';
+
+            acqModelParams.equitySplits.forEach(split => {
+                const splitVal = equity * split.pct / 100;
+                html += '<tr><td>' + split.name + ' (' + split.pct.toFixed(1) + '%)</td><td class="acq-investor-value">' + Math.round(splitVal).toLocaleString() + '</td></tr>';
+            });
+
+            document.getElementById('acqInvestorTable').innerHTML = html;
+        }
+
+
+                window.addEventListener('DOMContentLoaded', init);
     </script>
 </body>
 </html>

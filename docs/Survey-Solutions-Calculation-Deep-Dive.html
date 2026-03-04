@@ -1,0 +1,1552 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Survey Solutions – Calculation Deep Dive for HTML App Implementation</title>
+<style>
+  :root {
+    --bg: #0f1117;
+    --surface: #1a1d27;
+    --surface2: #222633;
+    --border: #2d3348;
+    --text: #e2e4eb;
+    --text-muted: #8b90a0;
+    --accent: #6c8aff;
+    --accent2: #38bdf8;
+    --green: #34d399;
+    --orange: #fb923c;
+    --red: #f87171;
+    --purple: #a78bfa;
+    --yellow: #fbbf24;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    line-height: 1.7;
+    padding: 0;
+  }
+  /* NAV */
+  .sidebar {
+    position: fixed; left: 0; top: 0; bottom: 0; width: 280px;
+    background: var(--surface);
+    border-right: 1px solid var(--border);
+    overflow-y: auto; padding: 24px 0;
+    z-index: 100;
+  }
+  .sidebar h2 { font-size: 14px; color: var(--accent); padding: 0 20px; margin-bottom: 16px; letter-spacing: 1px; text-transform: uppercase; }
+  .sidebar a {
+    display: block; padding: 8px 20px; color: var(--text-muted); text-decoration: none;
+    font-size: 13px; border-left: 3px solid transparent; transition: all .2s;
+  }
+  .sidebar a:hover, .sidebar a.active { color: var(--text); background: var(--surface2); border-left-color: var(--accent); }
+  .sidebar .section-label { color: var(--accent2); font-weight: 600; font-size: 11px; text-transform: uppercase; letter-spacing: 1.2px; padding: 16px 20px 4px; }
+
+  /* MAIN */
+  .main { margin-left: 280px; padding: 40px 60px 80px; max-width: 1100px; }
+  h1 { font-size: 32px; font-weight: 700; margin-bottom: 8px; background: linear-gradient(135deg, var(--accent), var(--accent2)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+  .subtitle { color: var(--text-muted); font-size: 16px; margin-bottom: 40px; }
+  h2 { font-size: 24px; font-weight: 600; color: var(--accent2); margin: 48px 0 16px; padding-bottom: 8px; border-bottom: 1px solid var(--border); }
+  h3 { font-size: 18px; font-weight: 600; color: var(--text); margin: 32px 0 12px; }
+  h4 { font-size: 15px; font-weight: 600; color: var(--purple); margin: 24px 0 8px; }
+  p { margin-bottom: 14px; color: var(--text); font-size: 15px; }
+
+  /* CODE */
+  .formula-block {
+    background: var(--surface2); border: 1px solid var(--border); border-radius: 8px;
+    padding: 16px 20px; margin: 12px 0 20px; font-family: 'JetBrains Mono', 'Fira Code', monospace;
+    font-size: 13px; line-height: 1.8; overflow-x: auto; position: relative;
+  }
+  .formula-block .label {
+    position: absolute; top: -10px; left: 12px; background: var(--accent); color: #fff;
+    font-size: 10px; font-weight: 700; padding: 2px 8px; border-radius: 4px; text-transform: uppercase;
+    letter-spacing: .5px; font-family: Inter, sans-serif;
+  }
+  .formula-block .label.js { background: var(--yellow); color: #000; }
+  .formula-block .label.logic { background: var(--purple); }
+  .formula-block .label.data { background: var(--green); color: #000; }
+  code { font-family: 'JetBrains Mono', 'Fira Code', monospace; background: var(--surface2); padding: 2px 6px; border-radius: 4px; font-size: 13px; color: var(--orange); }
+
+  /* TABLES */
+  table { width: 100%; border-collapse: collapse; margin: 16px 0 24px; font-size: 14px; }
+  th { background: var(--surface2); color: var(--accent2); text-align: left; padding: 10px 14px; border: 1px solid var(--border); font-weight: 600; font-size: 12px; text-transform: uppercase; letter-spacing: .5px; }
+  td { padding: 10px 14px; border: 1px solid var(--border); color: var(--text); }
+  tr:nth-child(even) td { background: rgba(26,29,39,0.5); }
+
+  /* CALLOUTS */
+  .callout {
+    border-left: 4px solid var(--accent); background: var(--surface2); border-radius: 0 8px 8px 0;
+    padding: 14px 18px; margin: 16px 0; font-size: 14px;
+  }
+  .callout.warn { border-left-color: var(--orange); }
+  .callout.key { border-left-color: var(--green); }
+  .callout strong { color: var(--accent2); }
+
+  /* FLOW DIAGRAMS */
+  .flow {
+    display: flex; align-items: center; gap: 8px; flex-wrap: wrap;
+    margin: 16px 0; padding: 16px; background: var(--surface2); border-radius: 8px;
+  }
+  .flow .step {
+    background: var(--surface); border: 1px solid var(--border); border-radius: 6px;
+    padding: 8px 14px; font-size: 13px; font-weight: 500; white-space: nowrap;
+  }
+  .flow .arrow { color: var(--accent); font-weight: 700; font-size: 18px; }
+  .flow .step.highlight { border-color: var(--accent); color: var(--accent); }
+  .flow .step.result { border-color: var(--green); color: var(--green); background: rgba(52,211,153,0.1); }
+
+  /* PILL TAGS */
+  .tag { display: inline-block; font-size: 11px; font-weight: 600; padding: 2px 8px; border-radius: 12px; margin-right: 4px; }
+  .tag.input { background: rgba(108,138,255,0.2); color: var(--accent); }
+  .tag.output { background: rgba(52,211,153,0.2); color: var(--green); }
+  .tag.param { background: rgba(167,139,250,0.2); color: var(--purple); }
+
+  /* SECTION NUMBERS */
+  .section-num { color: var(--accent); font-weight: 700; margin-right: 8px; }
+
+  @media (max-width: 900px) {
+    .sidebar { display: none; }
+    .main { margin-left: 0; padding: 24px; }
+  }
+</style>
+</head>
+<body>
+
+<nav class="sidebar">
+  <h2>Calculation Guide</h2>
+  <span class="section-label">Foundation</span>
+  <a href="#overview">Overview & Data Model</a>
+  <a href="#timing">Acquisition Timing Engine</a>
+  <span class="section-label">Revenue & Profit</span>
+  <a href="#core-biz">Core Business Revenue</a>
+  <a href="#acq-revenue">Acquisition Revenue</a>
+  <a href="#group-revenue">Group Revenue Build-Up</a>
+  <a href="#ebitda">EBITDA Schedule</a>
+  <a href="#synergies">Synergy Phase-In Model</a>
+  <span class="section-label">Cash Flow</span>
+  <a href="#cashflow">Cash Flow Waterfall</a>
+  <a href="#capex">Capex & HP Financing</a>
+  <a href="#wc">Working Capital</a>
+  <a href="#interest">Interest Calculations</a>
+  <a href="#tax">Tax Treatment</a>
+  <span class="section-label">Funding</span>
+  <a href="#funding-req">Funding Requirement</a>
+  <a href="#leverage">Leverage Covenant</a>
+  <a href="#debt-cap">Debt Capacity</a>
+  <a href="#deferrals">Deferred Consideration</a>
+  <a href="#equity">Equity Requirement</a>
+  <a href="#debt-sched">Debt Schedule</a>
+  <span class="section-label">Returns</span>
+  <a href="#westbridge">WestBridge Compounding</a>
+  <a href="#exit">Exit & Investor Returns</a>
+  <span class="section-label">Implementation</span>
+  <a href="#quarterly">Quarterly Conversion</a>
+  <a href="#data-structs">Data Structures</a>
+  <a href="#calc-order">Calculation Order</a>
+  <span class="section-label">Appendices</span>
+  <a href="#appendix-deals">A. Deal Pipeline Data</a>
+  <a href="#appendix-notes">B. Excel Quirks & Notes</a>
+</nav>
+
+<main class="main">
+
+<h1>Survey Solutions – Calculation Deep Dive</h1>
+<p class="subtitle">Complete formula logic for HTML app implementation · Every calculation mechanic from the Excel model, translated to implementable pseudocode</p>
+
+<!-- ============================================================ -->
+<h2 id="overview"><span class="section-num">1</span>Overview & Data Model</h2>
+
+<p>The Excel model is a <strong>buy-and-build investment case</strong> for Survey Solutions, a geotechnical/surveying services platform backed by WestBridge Capital. It models the platform acquiring 8 bolt-on businesses over FY25–FY28 and projects a leveraged exit. All figures are in £'000.</p>
+
+<h3>Model Architecture</h3>
+<p>The model has five logical layers that must be calculated in strict sequence:</p>
+
+<div class="flow">
+  <div class="step highlight">1. Acquisition Timing</div>
+  <div class="arrow">→</div>
+  <div class="step">2. Revenue & EBITDA Build-Up</div>
+  <div class="arrow">→</div>
+  <div class="step">3. Cash Flow Waterfall</div>
+  <div class="arrow">→</div>
+  <div class="step">4. Funding & Debt</div>
+  <div class="arrow">→</div>
+  <div class="step result">5. Investor Returns</div>
+</div>
+
+<h3>Key Input Parameters (User-Configurable)</h3>
+<table>
+  <tr><th>Parameter</th><th>Excel Location</th><th>Current Value</th><th>Description</th></tr>
+  <tr><td>Acquisition quarter</td><td>I29:I36</td><td>Q3 26 → Q4 28</td><td>Quarter each deal completes</td></tr>
+  <tr><td>Target EBITDA (£'000)</td><td>G29:G36</td><td>450–1,500</td><td>Standalone EBITDA of target at acquisition</td></tr>
+  <tr><td>EBITDA margin</td><td>H29:H36</td><td>14%–22%</td><td>Used to back-calculate revenue from EBITDA</td></tr>
+  <tr><td>Purchase multiple</td><td>L48:L55</td><td>4.0x–6.0x</td><td>Purchase price as multiple of EBITDA</td></tr>
+  <tr><td>Synergy EBITDA (£'000)</td><td>L58:L65</td><td>0–150</td><td>Total synergy EBITDA per deal (phased over Yr1+Yr2)</td></tr>
+  <tr><td>Fees per deal (£'000)</td><td>M48:M55</td><td>250–350</td><td>Legal/DD/advisory fees</td></tr>
+  <tr><td>Core revenue growth rates</td><td>L73 per entity</td><td>5%–9%</td><td>Annual organic growth for LSS, JWG, S/Tec</td></tr>
+  <tr><td>GP margins</td><td>G81:J81</td><td>42.9%–43.0%</td><td>Core gross profit margin</td></tr>
+  <tr><td>Overhead %</td><td>F84:J84</td><td>22.4%–22.5%</td><td>Overhead as % of core revenue</td></tr>
+  <tr><td>Bank interest rate</td><td>L110</td><td>10.75%</td><td>ThinCats-style senior debt rate</td></tr>
+  <tr><td>HP interest rate</td><td>L111</td><td>8.5%</td><td>Hire purchase financing rate</td></tr>
+  <tr><td>Capex as % of revenue</td><td>L107</td><td>3%</td><td>Annual capital expenditure</td></tr>
+  <tr><td>Deferred consideration %</td><td>L159, L160</td><td>25%, 15%</td><td>1-year and 2-year deferral portions</td></tr>
+  <tr><td>Exit EBITDA multiple</td><td>X8</td><td>12x</td><td>Enterprise value at exit</td></tr>
+  <tr><td>WestBridge interest rate</td><td>V18</td><td>12.5%</td><td>Loan note coupon (compounding)</td></tr>
+</table>
+
+<!-- ============================================================ -->
+<h2 id="timing"><span class="section-num">2</span>Acquisition Timing Engine</h2>
+
+<p>Every acquisition has a <strong>completion quarter</strong> (e.g., "Q3 26"). The model extracts the year to route financials into the correct annual column, and uses the quarter prefix for synergy phase-in calculations.</p>
+
+<h3>Year Extraction</h3>
+<div class="formula-block">
+  <span class="label">Excel</span>
+  M29 = RIGHT(I29, 2)          // "Q3 26" → "26"
+  M30 = RIGHT(I30, 2)          // "Q4 26" → "26"
+  M33 = RIGHT(I33, 2)          // "Q1 27" → "27"
+</div>
+
+<div class="formula-block">
+  <span class="label js">JavaScript</span>
+  function extractYear(quarterStr) {
+    // quarterStr = "Q3 26"
+    return quarterStr.trim().slice(-2);  // "26"
+  }
+
+  function extractQuarter(quarterStr) {
+    // quarterStr = "Q3 26"
+    return quarterStr.trim().substring(0, 2);  // "Q3"
+  }
+</div>
+
+<h3>Year Routing – Placing EBITDA in the Correct FY Column</h3>
+<p>Each acquisition's EBITDA appears <em>only</em> in the year it completes. This is the fundamental routing mechanism for the entire model.</p>
+
+<div class="formula-block">
+  <span class="label">Excel</span>
+  // Row 48 onwards: "Acquisitions EBITDA by Year of Completion"
+  G48 = IF($M29 = "26", $G29, 0)     // FY26 column: show EBITDA if deal completes in '26
+  H48 = IF($M29 = "27", $G29, 0)     // FY27 column: show EBITDA if deal completes in '27
+  I48 = IF($M29 = "28", $G29, 0)     // FY28 column: show EBITDA if deal completes in '28
+</div>
+
+<div class="formula-block">
+  <span class="label js">JavaScript</span>
+  function routeEbitdaByYear(acquisition, targetYear) {
+    // acquisition = { ebitda: 500, completionQuarter: "Q3 26" }
+    const dealYear = extractYear(acquisition.completionQuarter);
+    return (dealYear === targetYear) ? acquisition.ebitda : 0;
+  }
+
+  // For each financial year, sum all acquisitions completing that year:
+  function getYearAcquisitionEbitda(acquisitions, targetYear) {
+    return acquisitions.reduce((sum, acq) => {
+      return sum + routeEbitdaByYear(acq, targetYear);
+    }, 0);
+  }
+</div>
+
+<div class="callout key">
+  <strong>Key for HTML app:</strong> The online tool should let users set each acquisition's quarter from a dropdown (Q1–Q4) and year. The routing function then determines which annual (or quarterly) column each deal's financials appear in. This replaces the Excel IF-based column routing with a simple programmatic filter.
+</div>
+
+<!-- ============================================================ -->
+<h2 id="core-biz"><span class="section-num">3</span>Core Business Revenue</h2>
+
+<p>Survey Solutions has three operating entities (LSS, JWG, S/Tec) each with their own revenue line, growth rate, and margin structure. The core business forms the baseline before any acquisitions.</p>
+
+<h3>Gross Revenue Growth</h3>
+
+<div class="callout warn">
+  <strong>Excel nuance:</strong> FY25 and FY26 values are <em>hardcoded</em> in the Excel model (not formula-driven). The growth formula <code>=G73*(1+$L$73)</code> only kicks in from FY27 onwards. The HTML app should use formula-driven growth from a base year, but be aware that Excel "actuals" for FY25/FY26 may differ from pure compound growth.
+</div>
+
+<div class="formula-block">
+  <span class="label">Excel</span>
+  // Row 73: Core entity gross revenue
+  // LSS (row 73):
+  F73 = 15924                         // FY25 actual (hardcoded)
+  G73 = 17310                         // FY26 budget (hardcoded — NOT 15924 × 1.09)
+  H73 = G73 * (1 + $L$73)            // FY27 = 17310 × 1.09 = 18867.9
+
+  // JWG (row 74):
+  F74 = 1802                          // FY25 actual
+  G74 = 1880                          // FY26 budget (hardcoded)
+  H74 = G74 * (1 + $L$74)            // Growth at 5%
+
+  // S/Tec (row 75):
+  F75 = 1495  (= 1007 + 488)         // FY25 actual (two sub-entities)
+  G75 = 1480                          // FY26 budget (hardcoded, slight decline)
+  H75 = G75 * (1 + $L$75)            // Growth at 5%
+
+  // Row 76: Total core gross revenue
+  F76 = SUM(F73:F75)                  // Sum of 3 entities
+</div>
+
+<div class="formula-block">
+  <span class="label js">JavaScript</span>
+  // ACTUAL values from Excel (hardcoded for FY25 and FY26)
+  const coreEntities = [
+    { name: "LSS",   fy25: 15924, fy26: 17310, growthRate: 0.09 },
+    { name: "JWG",   fy25: 1802,  fy26: 1880,  growthRate: 0.05 },
+    { name: "S/Tec", fy25: 1495,  fy26: 1480,  growthRate: 0.05 },
+  ];
+
+  function calcCoreGrossRevenue(entity, yearIndex) {
+    // yearIndex: 0 = FY25, 1 = FY26, 2 = FY27, etc.
+    if (yearIndex === 0) return entity.fy25;
+    if (yearIndex === 1) return entity.fy26;
+    // FY27+ uses compound growth from FY26 base
+    return entity.fy26 * Math.pow(1 + entity.growthRate, yearIndex - 1);
+  }
+
+  function totalCoreGrossRevenue(yearIndex) {
+    return coreEntities.reduce((sum, e) => sum + calcCoreGrossRevenue(e, yearIndex), 0);
+  }
+</div>
+
+<h3>Net Revenue (Subcontractor Deduction)</h3>
+
+<div class="callout warn">
+  <strong>Excel nuance:</strong> The subcontractor retention rate varies by year: 90% (FY25), 91.446% (FY26), 91% (FY27+). This likely reflects an improving subcon mix as the business scales.
+</div>
+
+<div class="formula-block">
+  <span class="label">Excel</span>
+  F77 = F76 * 0.9                     // FY25: Net Revenue = 90% of Gross
+  G77 = G76 * 0.91446                 // FY26: 91.446% retention
+  H77 = H76 * 0.91                    // FY27: 91% retention
+  I77 = I76 * 0.91                    // FY28: 91% retention
+</div>
+
+<div class="formula-block">
+  <span class="label js">JavaScript</span>
+  const SUBCON_RETENTION = {
+    0: 0.90,      // FY25
+    1: 0.91446,   // FY26
+    2: 0.91,      // FY27+
+  };
+
+  function getSubconRetention(yearIndex) {
+    return SUBCON_RETENTION[yearIndex] ?? 0.91;  // Default to 91% for FY27+
+  }
+
+  function coreNetRevenue(yearIndex) {
+    return totalCoreGrossRevenue(yearIndex) * getSubconRetention(yearIndex);
+  }
+</div>
+
+<h3>Gross Profit</h3>
+<div class="formula-block">
+  <span class="label">Excel</span>
+  // Row 80: GP = margin × net revenue
+  G80 = G81 * G77                     // GP margin × net revenue
+  // G81 holds the margin: 42.9% (FY26) → 43.0% (FY27+)
+</div>
+
+<h3>Overheads</h3>
+<div class="formula-block">
+  <span class="label">Excel</span>
+  // Row 83: Overheads = core gross revenue × OH% × -1
+  F83 = F76 * F84 * -1                // Negative value (cost)
+  // F84 = 22.4% (FY25), 22.5% (FY26 onwards)
+</div>
+
+<h3>Core EBITDA</h3>
+<div class="formula-block">
+  <span class="label">Excel</span>
+  F87 = F80 + F83                     // Core EBITDA = Gross Profit + Overheads (overheads are negative)
+</div>
+
+<div class="formula-block">
+  <span class="label js">JavaScript</span>
+  function calcCoreEbitda(yearIndex) {
+    const grossRev = totalCoreGrossRevenue(yearIndex);
+    const netRev = grossRev * SUBCON_RETENTION;
+    const gpMargin = yearIndex === 0 ? 0.429 : 0.43;
+    const ohPct = yearIndex === 0 ? 0.224 : 0.225;
+
+    const grossProfit = netRev * gpMargin;
+    const overheads = grossRev * ohPct * -1;  // Note: OH% applied to GROSS revenue, not net
+
+    return grossProfit + overheads;  // overheads already negative
+  }
+</div>
+
+<div class="callout warn">
+  <strong>Important detail:</strong> Overheads are calculated as a percentage of <em>gross</em> revenue (row 76), while gross profit is calculated on <em>net</em> revenue (row 77). This is a deliberate distinction in the Excel model — overheads scale with total business activity including subcontractors, while profit margins apply only to retained revenue.
+</div>
+
+<!-- ============================================================ -->
+<h2 id="acq-revenue"><span class="section-num">4</span>Acquisition Revenue</h2>
+
+<p>Each acquisition's revenue is <strong>back-calculated from EBITDA</strong> using an assumed margin. The Excel model does not track acquisition revenue independently — it derives it from EBITDA and a blended margin.</p>
+
+<h3>Revenue Back-Calculation</h3>
+<div class="formula-block">
+  <span class="label">Excel</span>
+  // Row 38 onwards: "Acquisitions Revenue by Year of Completion"
+  G38 = G48 / $H$29                   // Revenue = EBITDA / Margin
+  // $H$29 is the EBITDA margin for the first pipeline deal
+  // Margin is typically ~25-30%
+</div>
+
+<div class="formula-block">
+  <span class="label js">JavaScript</span>
+  function acquisitionRevenue(ebitda, ebitdaMargin) {
+    // ebitdaMargin from the deal (e.g., 0.27 = 27%)
+    return ebitda / ebitdaMargin;
+  }
+</div>
+
+<div class="callout">
+  <strong>Note:</strong> The Excel model uses a <em>single cell reference</em> ($H$29) for the margin of all pipeline acquisitions. In the HTML app, each acquisition should carry its own EBITDA margin input so revenue can be computed per deal.
+</div>
+
+<!-- ============================================================ -->
+<h2 id="group-revenue"><span class="section-num">5</span>Group Revenue Build-Up</h2>
+
+<p>Group revenue combines the core business, pipeline acquisitions (pre-existing, with known financials), and new bolt-on acquisitions. The formula is complex because it handles margin-based revenue conversion for acquired businesses.</p>
+
+<h3>The Group Revenue Formula</h3>
+<div class="formula-block">
+  <span class="label">Excel</span>
+  // Row 90: Group Revenue
+  G90 = (G14 + G46)                           // Pipeline acquisition revenue (direct)
+       + IF(F101 > 0, (G94 / F101), 0)        // Acquired EBITDA → revenue via implied margin
+       + G76                                    // Core business gross revenue
+
+  // F101: Implied margin for acquired businesses
+  F101 = IFERROR(F94 / (F14 + F46), 0)        // Total acquired EBITDA / total pipeline revenue
+</div>
+
+<p>The key insight: for acquired businesses, the model uses an <strong>implied EBITDA margin</strong> derived from the prior year's ratio of acquired EBITDA to pipeline revenue. This converts EBITDA back to revenue for the group P&L.</p>
+
+<div class="formula-block">
+  <span class="label js">JavaScript</span>
+  function calcGroupRevenue(year) {
+    const coreRev = totalCoreGrossRevenue(year.index);
+
+    // Pipeline acquisitions (pre-existing, with known revenue)
+    const pipelineRev = year.pipelineRevenue;  // Direct revenue figures
+
+    // Bolt-on acquisitions: convert EBITDA to revenue using implied margin
+    const totalAcqEbitda = year.totalAcquiredEbitda;
+    const prevImpliedMargin = year.prev ? year.prev.impliedMargin : 0;
+    const acqRevenue = prevImpliedMargin > 0
+      ? totalAcqEbitda / prevImpliedMargin
+      : 0;
+
+    return coreRev + pipelineRev + acqRevenue;
+  }
+
+  function calcImpliedMargin(year) {
+    // Implied margin = total acquired EBITDA / total pipeline revenue
+    const pipelineRev = year.pipelineRevenue;
+    if (pipelineRev === 0) return 0;
+    return year.totalAcquiredEbitda / pipelineRev;
+  }
+</div>
+
+<div class="callout warn">
+  <strong>HTML app simplification:</strong> Rather than this circular implied-margin approach, the HTML app should store each acquisition's EBITDA margin explicitly, then compute revenue = EBITDA / margin directly. This eliminates the IFERROR guards and cross-year margin lookups.
+</div>
+
+<!-- ============================================================ -->
+<h2 id="ebitda"><span class="section-num">6</span>EBITDA Schedule (Layered by Acquisition Vintage)</h2>
+
+<p>This is the heart of the model. Group EBITDA is built up in layers, with each acquisition "vintage" (year of completion) tracked separately and growing at 5% annually thereafter.</p>
+
+<h3>Layer Structure</h3>
+<table>
+  <tr><th>Layer</th><th>Row</th><th>Description</th></tr>
+  <tr><td>Core EBITDA</td><td>87 → 93</td><td>From organic business (GP + overheads)</td></tr>
+  <tr><td>Pipeline EBITDA</td><td>Rows 16–19 + 22–25</td><td>Pre-existing pipeline acquisitions</td></tr>
+  <tr><td>FY26 Vintage</td><td>94 (incl. synergies from 58–65)</td><td>Deals completing in FY26</td></tr>
+  <tr><td>FY27 Vintage</td><td>95</td><td>Deals completing in FY27, + FY26 vintage growth</td></tr>
+  <tr><td>FY28 Vintage</td><td>96</td><td>Deals completing in FY28, + FY26+27 vintage growth</td></tr>
+  <tr><td>Synergies</td><td>58–65</td><td>Phase-in per acquisition (see Synergy section)</td></tr>
+</table>
+
+<h3>Acquisition Year EBITDA (Year of Completion)</h3>
+
+<p>Each vintage row combines <strong>pipeline deals</strong> (rows 16–19 for EBITDA, 22–25 for synergies) AND <strong>bolt-on deals</strong> (rows 48–55 for EBITDA, 58–65 for synergies) in a single sum. This is how the FY26 vintage = 2593.75:</p>
+
+<table>
+  <tr><th>Component</th><th>Source</th><th>FY26 Value (£'000)</th></tr>
+  <tr><td>CCGI (pipeline EBITDA)</td><td>G16</td><td>1,100</td></tr>
+  <tr><td>SiteEye (pipeline EBITDA)</td><td>G17</td><td>400</td></tr>
+  <tr><td>CCGI synergies</td><td>G22</td><td>75</td></tr>
+  <tr><td>Acquisition 1 (bolt-on EBITDA)</td><td>G48</td><td>550</td></tr>
+  <tr><td>Acquisition 2 (bolt-on EBITDA)</td><td>G49</td><td>450</td></tr>
+  <tr><td>Acq 3 synergies (Q2 27 deal, partial phase-in)</td><td>G60</td><td>18.75</td></tr>
+  <tr><td><strong>Total FY26 Vintage</strong></td><td>G95</td><td><strong>2,593.75</strong></td></tr>
+</table>
+
+<div class="formula-block">
+  <span class="label">Excel</span>
+  // Row 95 (FY26 vintage): Pipeline + bolt-on EBITDA + synergies — ALL in one sum
+  G95 = SUM(G16:G19, G22:G25) + SUM(G48:G55, G58:G65)
+  // = (1100 + 400 + 0 + 0) + (75 + 0 + 0 + 0) + (550 + 450 + 0 + 0 + 0 + 0 + 0 + 0)
+  //   + (0 + 0 + 18.75 + 0 + 0 + 0 + 0 + 0) = 2593.75
+
+  // Subsequent years: 5% annual growth on the ENTIRE vintage base
+  H95 = G95 * (1 + $L$95)             // L95 = 5% growth rate → 2723.44
+  I95 = H95 * (1 + $L$95)             // → 2859.61
+
+  // FY27 vintage (row 96) — same pattern but for deals completing in '27:
+  H96 = SUM(H16:H19, H22:H25, H48:H55, H58:H65)    // = 2550
+  I96 = H96 * (1 + $L$96)             // → 2677.50
+
+  // FY28 vintage (row 97):
+  I97 = SUM(I16:I19, I22:I25, I48:I55, I58:I65)     // = 4356.25
+</div>
+
+<div class="formula-block">
+  <span class="label js">JavaScript</span>
+  const ACQ_GROWTH_RATE = 0.05;  // 5% annual growth on acquired EBITDA
+
+  function calcVintageBaseEbitda(acquisitions, pipelineDeals, targetYear) {
+    // Sum pipeline EBITDA + synergies routed to this year
+    let total = 0;
+
+    // Pipeline deals (pre-agreed, hardcoded in the model)
+    for (const deal of pipelineDeals) {
+      total += deal.ebitdaByYear[targetYear] || 0;
+      total += deal.synergyByYear[targetYear] || 0;
+    }
+
+    // Bolt-on acquisitions completing this year
+    for (const acq of acquisitions) {
+      total += routeEbitdaByYear(acq, targetYear);
+    }
+
+    // Synergies for ALL acquisitions that phase into this year
+    total += totalSynergiesForYear(acquisitions, targetYear);
+
+    return total;
+  }
+
+  function calcVintageEbitda(vintageBase, yearsSinceCompletion) {
+    if (yearsSinceCompletion === 0) return vintageBase;
+    return vintageBase * Math.pow(1 + ACQ_GROWTH_RATE, yearsSinceCompletion);
+  }
+</div>
+
+<h3>Group EBITDA (All Layers Combined)</h3>
+<div class="formula-block">
+  <span class="label">Excel</span>
+  // Row 98: Group EBITDA = sum of all layers
+  F98 = SUM(F93:F97)
+  // Where:
+  //   F93 = Core EBITDA (row 87, after adding central costs/exceptionals)
+  //   F94 = Acquired EBITDA (current year vintage)
+  //   F95 = Prior year 1 vintage, grown
+  //   F96 = Prior year 2 vintage, grown
+  //   F97 = Additional/central adjustments
+</div>
+
+<div class="formula-block">
+  <span class="label js">JavaScript</span>
+  function calcGroupEbitda(yearIndex, allVintages) {
+    const coreEbitda = calcCoreEbitda(yearIndex);
+
+    // Sum all vintage layers (each growing at 5% from their base year)
+    let acquiredEbitda = 0;
+    for (const vintage of allVintages) {
+      const yearsSince = yearIndex - vintage.completionYearIndex;
+      if (yearsSince >= 0) {
+        acquiredEbitda += calcVintageEbitda(vintage, yearsSince);
+      }
+    }
+
+    return coreEbitda + acquiredEbitda;
+  }
+</div>
+
+<!-- ============================================================ -->
+<h2 id="synergies"><span class="section-num">7</span>Synergy Phase-In Model</h2>
+
+<p>Synergies don't arrive immediately — they phase in over Year 1 and Year 2 based on <em>which quarter</em> the deal completes. A Q1 deal gets 75% of synergies in Year 1 and the remaining 25% in Year 2. A Q4 deal gets 0% in Year 1 and 100% in Year 2.</p>
+
+<h3>Synergy Lookup Table</h3>
+<table>
+  <tr><th>Completion Quarter</th><th>Year 1 Phase-In</th><th>Year 2 Phase-In</th></tr>
+  <tr><td>Q1</td><td>75%</td><td>25%</td></tr>
+  <tr><td>Q2</td><td>50%</td><td>50%</td></tr>
+  <tr><td>Q3</td><td>25%</td><td>75%</td></tr>
+  <tr><td>Q4</td><td>0%</td><td>100%</td></tr>
+</table>
+
+<h3>Phase-In Calculation</h3>
+<div class="formula-block">
+  <span class="label">Excel</span>
+  // Lookup table at AB58:AD61 (Quarter → Year1 pct, Year2 pct)
+  // AB58="Q1", AC58=0.75, AD58=0.25
+  // AB59="Q2", AC59=0.50, AD59=0.50
+  // AB60="Q3", AC60=0.25, AD60=0.75
+  // AB61="Q4", AC61=0.00, AD61=1.00
+
+  // For Year 1 (same year as completion):
+  U58 = IF(RIGHT($S58, 2) = U$57, 1, 0)            // Does deal complete this year? (1 or 0)
+      * VLOOKUP(LEFT($S58, 2), $AB$58:$AC$61, 2, 0)  // Lookup Year1 phase-in %
+
+  // For Year 2 (year after completion) — TWO terms added:
+  X58 = IF(RIGHT($S58, 2) = X$57, 1, 0)             // Does deal complete THIS year?
+      * VLOOKUP(LEFT($S58, 2), $AB$58:$AC$61, 2, 0)   // Year1 phase-in for new deals
+      + IF(RIGHT($S58, 2) = W$57, 1, 0)              // Did deal complete LAST year?
+      * VLOOKUP(LEFT($S58, 2), $AB$58:$AD$61, 3, 0)   // Year2 phase-in for prior year deals
+
+  // Synergy value = Total synergy × phase-in fraction
+  F58 = $L58 * U58                                    // £ synergy in this year
+</div>
+
+<div class="formula-block">
+  <span class="label js">JavaScript</span>
+  const SYNERGY_PHASEIN = {
+    "Q1": { year1: 0.75, year2: 0.25 },
+    "Q2": { year1: 0.50, year2: 0.50 },
+    "Q3": { year1: 0.25, year2: 0.75 },
+    "Q4": { year1: 0.00, year2: 1.00 },
+  };
+
+  function calcSynergyForYear(acquisition, targetYear) {
+    const dealYear = extractYear(acquisition.completionQuarter);
+    const dealQ = extractQuarter(acquisition.completionQuarter);  // "Q3"
+    const phaseIn = SYNERGY_PHASEIN[dealQ];
+
+    const yearDiff = parseInt(targetYear) - parseInt(dealYear);
+
+    if (yearDiff === 0) {
+      // Year of completion → Year 1 phase-in
+      return acquisition.totalSynergy * phaseIn.year1;
+    } else if (yearDiff === 1) {
+      // Year after completion → Year 2 phase-in (remaining)
+      return acquisition.totalSynergy * phaseIn.year2;
+    } else if (yearDiff > 1) {
+      // Fully synergised — no additional phase-in (growth handled separately)
+      return 0;  // Already in the base via vintage growth
+    }
+    return 0;  // Before completion
+  }
+
+  // Total synergies for a given year across all acquisitions
+  function totalSynergiesForYear(acquisitions, targetYear) {
+    return acquisitions.reduce((sum, acq) => {
+      return sum + calcSynergyForYear(acq, targetYear);
+    }, 0);
+  }
+</div>
+
+<div class="callout key">
+  <strong>HTML app enhancement:</strong> For a quarterly model, you could extend this to quarter-level granularity. A Q3 deal would get: Q3 synergies = 0%, Q4 = 25% annualised, then Year 2 Q1-Q4 = remaining 75%. The current Excel model only does annual phase-in, but quarterly allows more precise cash flow timing.
+</div>
+
+<!-- ============================================================ -->
+<h2 id="cashflow"><span class="section-num">8</span>Cash Flow Waterfall</h2>
+
+<p>The cash flow waterfall builds from Group EBITDA down to net cash generated, then accumulates a running balance. This is the primary output for assessing funding requirements.</p>
+
+<h3>Waterfall Structure</h3>
+<div class="flow">
+  <div class="step highlight">Group EBITDA</div>
+  <div class="arrow">→</div>
+  <div class="step">− Exceptionals</div>
+  <div class="arrow">→</div>
+  <div class="step">− Bank Interest</div>
+  <div class="arrow">→</div>
+  <div class="step">− HP Interest</div>
+  <div class="arrow">→</div>
+  <div class="step">− HP Capital</div>
+  <div class="arrow">→</div>
+  <div class="step">− Cash Capex</div>
+  <div class="arrow">→</div>
+  <div class="step">− Working Capital</div>
+  <div class="arrow">→</div>
+  <div class="step">− Tax</div>
+  <div class="arrow">→</div>
+  <div class="step result">Net Cash</div>
+</div>
+
+<div class="formula-block">
+  <span class="label">Excel</span>
+  // Row 117: Net Cash Generated
+  F117 = SUM(F109:F115) + F98
+  // Where:
+  //   F98  = Group EBITDA (positive)
+  //   F109 = Exceptionals (negative, one-off costs)
+  //   F110 = Bank debt interest (negative)
+  //   F111 = HP interest (negative)
+  //   F112 = HP capital repayment (negative)
+  //   F113 = Cash capex (negative)
+  //   F114 = Working capital movement (negative when growing)
+  //   F115 = Tax (zero — losses brought forward)
+
+  // Row 118: Cumulative Cash Balance
+  G118 = F117 + G117                   // Prior cumulative + this year's net cash
+</div>
+
+<div class="formula-block">
+  <span class="label js">JavaScript</span>
+  function calcNetCash(year) {
+    return year.groupEbitda
+         + year.exceptionals       // negative
+         + year.bankInterest       // negative
+         + year.hpInterest         // negative
+         + year.hpCapital          // negative
+         + year.cashCapex          // negative
+         + year.workingCapital     // negative when revenue growing
+         + year.tax;               // zero (losses b/f)
+  }
+
+  function calcCumulativeCash(years) {
+    let cumulative = 0;
+    return years.map(year => {
+      const netCash = calcNetCash(year);
+      cumulative += netCash;
+      return { ...year, netCash, cumulativeCash: cumulative };
+    });
+  }
+</div>
+
+<!-- ============================================================ -->
+<h2 id="capex"><span class="section-num">9</span>Capex & HP (Hire Purchase) Financing</h2>
+
+<p>Capital expenditure is split 50/50 between cash capex and HP-financed equipment. HP has its own interest and capital repayment schedules that feed into the cash flow waterfall.</p>
+
+<h3>Total Capex</h3>
+<div class="formula-block">
+  <span class="label">Excel</span>
+  F107 = -F90 * $L$107                // Total capex = 3% of group revenue (negative)
+  // L107 = 0.03 (3%)
+</div>
+
+<h3>Cash Capex (50%)</h3>
+<div class="formula-block">
+  <span class="label">Excel</span>
+  F113 = F107 / 2                     // Half of total capex paid in cash
+</div>
+
+<h3>HP Capital Repayment</h3>
+<div class="formula-block">
+  <span class="label">Excel</span>
+  F112 = F107 / 2 / 4                 // Current year HP capex repaid over 4 years
+       + ($E$107 / 4)                 // Legacy HP balance also repaid over 4 years
+
+  // In subsequent years, this becomes cumulative:
+  G112 = G107 / 2 / 4                 // New HP this year
+       + F112                         // Plus carry-forward of prior HP repayments
+</div>
+
+<h3>HP Interest</h3>
+<div class="formula-block">
+  <span class="label">Excel</span>
+  F111 = ((F107 / 2) * $L$111)        // Interest on current year HP amount
+       + (F107 / 2 / 4)              // Capital element
+       + (E107 * L111)               // Interest on legacy HP balance
+
+  // L111 = 8.5%
+</div>
+
+<div class="formula-block">
+  <span class="label js">JavaScript</span>
+  const CAPEX_PCT = 0.03;
+  const HP_SPLIT = 0.5;    // 50% of capex is HP-financed
+  const HP_TERM = 4;       // 4-year repayment
+  const HP_RATE = 0.085;   // 8.5% HP interest rate
+
+  function calcCapex(groupRevenue) {
+    const totalCapex = groupRevenue * CAPEX_PCT;
+    const cashCapex = totalCapex * HP_SPLIT;
+    const hpAmount = totalCapex * HP_SPLIT;
+    return { totalCapex, cashCapex, hpAmount };
+  }
+
+  function calcHpSchedule(years) {
+    let outstandingHp = 0;  // Legacy HP balance from E107
+
+    return years.map((year, i) => {
+      const { hpAmount } = calcCapex(year.groupRevenue);
+
+      // Capital repayment = new HP / 4 years + prior outstanding / 4 years
+      const capitalRepayment = (hpAmount / HP_TERM) + (outstandingHp / HP_TERM);
+
+      // Interest = rate × (new HP + outstanding)
+      const hpInterest = HP_RATE * (hpAmount + outstandingHp);
+
+      // Update outstanding balance
+      outstandingHp = outstandingHp - (outstandingHp / HP_TERM) + hpAmount;
+
+      return {
+        hpCapital: -capitalRepayment,   // negative (cash out)
+        hpInterest: -hpInterest,        // negative (cash out)
+        cashCapex: -(hpAmount),         // negative (cash out)
+      };
+    });
+  }
+</div>
+
+<div class="callout warn">
+  <strong>Excel model nuance:</strong> The HP calculation in the Excel model has a slightly different structure than a clean amortisation — it uses a chain formula where each year's capital repayment includes the carry-forward from prior years. The HTML app should implement a proper HP amortisation table tracking opening balance, additions, repayments, and closing balance per year (and per quarter in the quarterly model).
+</div>
+
+<!-- ============================================================ -->
+<h2 id="wc"><span class="section-num">10</span>Working Capital</h2>
+
+<p>Working capital movement is modelled simply as <strong>2 months of EBITDA growth</strong> — when EBITDA grows, cash is absorbed into working capital; when it shrinks, cash is released.</p>
+
+<div class="formula-block">
+  <span class="label">Excel</span>
+  F114 = -(F98 - E98) / 6             // WC = -(current EBITDA - prior EBITDA) / 6
+  // Dividing annual growth by 6 = 2 months' worth
+  // Negative because growth absorbs cash
+</div>
+
+<div class="formula-block">
+  <span class="label js">JavaScript</span>
+  function calcWorkingCapital(currentEbitda, priorEbitda) {
+    // 2 months of EBITDA growth = annual growth / 6
+    return -(currentEbitda - priorEbitda) / 6;
+  }
+</div>
+
+<div class="callout key">
+  <strong>Quarterly conversion:</strong> For a quarterly model, working capital should be: <code>-(Q_ebitda - prev_Q_ebitda) / 6</code>. Since the quarter already represents ~3 months, dividing by 6 gives roughly 2 weeks of quarterly growth. Alternatively, consider using <code>ebitda_growth × (2/12)</code> to keep the 2-month logic but apply it quarterly: <code>-(quarterly_ebitda_annualised - prev) × (2/12) / 4</code>.
+</div>
+
+<!-- ============================================================ -->
+<h2 id="interest"><span class="section-num">11</span>Interest Calculations</h2>
+
+<h3>Bank Debt Interest</h3>
+<div class="formula-block">
+  <span class="label">Excel</span>
+  G110 = ((G192 * $L$110) + (G193 * L110)) * -1
+  // G192 = Opening bank debt balance
+  // G193 = Drawdown during the year
+  // L110 = 10.75% annual interest rate
+  // Interest charged on BOTH opening balance AND new drawdowns
+</div>
+
+<div class="formula-block">
+  <span class="label js">JavaScript</span>
+  const BANK_RATE = 0.1075;  // 10.75%
+
+  function calcBankInterest(openingDebt, drawdown) {
+    // Interest on opening balance + interest on new drawdown (full year)
+    return -((openingDebt * BANK_RATE) + (drawdown * BANK_RATE));
+  }
+</div>
+
+<div class="callout warn">
+  <strong>Quarterly improvement:</strong> The annual model charges a full year's interest on drawdowns regardless of when they occur. In a quarterly model, a Q3 drawdown would only incur ~50% of annual interest in its first year (2 quarters). Formula: <code>drawdown × rate × (quartersRemaining / 4)</code>.
+</div>
+
+<!-- ============================================================ -->
+<h2 id="tax"><span class="section-num">12</span>Tax Treatment</h2>
+
+<div class="formula-block">
+  <span class="label">Excel</span>
+  F115 = 0                             // Tax = £0 across entire model period
+  // Due to historic losses brought forward
+</div>
+
+<div class="formula-block">
+  <span class="label js">JavaScript</span>
+  // For the current model: tax = 0 due to losses brought forward
+  // Future enhancement: track taxable profit and loss pool
+  function calcTax(taxableProfit, lossesBroughtForward) {
+    const netTaxable = Math.max(0, taxableProfit - lossesBroughtForward);
+    return -(netTaxable * 0.25);  // UK corporation tax rate
+  }
+</div>
+
+<!-- ============================================================ -->
+<h2 id="funding-req"><span class="section-num">13</span>Funding Requirement per Acquisition</h2>
+
+<p>Each acquisition has a total funding requirement = EBITDA × purchase multiple + advisory fees.</p>
+
+<div class="formula-block">
+  <span class="label">Excel</span>
+  // Row 128: Total funding required per deal
+  G128 = IF(G48 > 0, (G48 * $L48 + $M48), 0)
+  // G48 = EBITDA routed to this year
+  // L48 = Purchase multiple (e.g., 5.0x)
+  // M48 = Fees (e.g., £75k)
+  // Only calculated if deal completes in this year
+</div>
+
+<div class="formula-block">
+  <span class="label js">JavaScript</span>
+  function calcFundingRequired(acquisition) {
+    return (acquisition.ebitda * acquisition.purchaseMultiple) + acquisition.fees;
+  }
+
+  // Total funding for a year = sum of all deals completing that year
+  function totalYearFunding(acquisitions, targetYear) {
+    return acquisitions
+      .filter(a => extractYear(a.completionQuarter) === targetYear)
+      .reduce((sum, a) => sum + calcFundingRequired(a), 0);
+  }
+</div>
+
+<!-- ============================================================ -->
+<h2 id="leverage"><span class="section-num">14</span>Leverage Covenant Test</h2>
+
+<p>Before each acquisition, the model tests whether the resulting leverage (debt / EBITDA) would breach the bank's covenant. The covenant ratio <strong>steps up</strong> as group EBITDA grows, allowing more leverage for larger platforms.</p>
+
+<h3>Running EBITDA (for covenant test)</h3>
+<div class="formula-block">
+  <span class="label">Excel</span>
+  // L29: Running total EBITDA including core business + all acquisitions to date
+  L29 = (IF(M29="26", F$87, IF(M29="27", G$87, H$87)))  // Core EBITDA for that year
+      + SUM($G$29:G29)                                      // Cumulative acquired EBITDA
+</div>
+
+<h3>Covenant Lookup</h3>
+<div class="formula-block">
+  <span class="label">Excel</span>
+  // Covenant thresholds (rows 220-223):
+  // EBITDA &lt; £3,500 → 3.00x leverage
+  // EBITDA £3,500–5,000 → 3.25x leverage
+  // EBITDA &gt; £5,000 → 3.75x leverage
+  // EBITDA &gt; £10,000 → 4.00x (not yet activated)
+
+  N29 = IF($L29 &lt; $E$220, $F$220,                        // &lt; £3.5m → 3.0x
+        IF(AND($L29 > $E$220, $L29 &lt; $E$222), $F$221,    // £3.5-5m → 3.25x
+        IF($L29 > $E$222, $F$222, 0)))                      // &gt; £5m → 3.75x
+</div>
+
+<div class="formula-block">
+  <span class="label js">JavaScript</span>
+  const COVENANTS = [
+    { threshold: 3500, multiple: 3.00 },   // Below £3.5m EBITDA
+    { threshold: 5000, multiple: 3.25 },   // £3.5m – £5m
+    { threshold: 10000, multiple: 3.75 },  // £5m – £10m
+    { threshold: Infinity, multiple: 4.00 }, // Above £10m
+  ];
+
+  function getCovenantMultiple(runningEbitda) {
+    for (const covenant of COVENANTS) {
+      if (runningEbitda < covenant.threshold) {
+        return covenant.multiple;
+      }
+    }
+    return COVENANTS[COVENANTS.length - 1].multiple;
+  }
+
+  function calcRunningEbitda(acquisition, coreEbitda, priorAcqEbitda) {
+    // Core EBITDA for the year + cumulative acquired EBITDA up to this deal
+    return coreEbitda + priorAcqEbitda + acquisition.ebitda;
+  }
+</div>
+
+<div class="callout key">
+  <strong>Critical ordering:</strong> Acquisitions must be processed <em>sequentially</em> within each year because each deal's covenant test depends on the cumulative EBITDA including all prior deals. The HTML app should process acquisitions in order (Q1 before Q2 before Q3 before Q4 within each year).
+</div>
+
+<!-- ============================================================ -->
+<h2 id="debt-cap"><span class="section-num">15</span>Debt Capacity per Acquisition</h2>
+
+<p>Debt capacity = the covenant multiple × deal EBITDA + fees. This is the maximum bank debt available for each deal.</p>
+
+<div class="formula-block">
+  <span class="label">Excel</span>
+  // Row 143: Debt capacity per deal
+  G143 = IF(G48 > 0, (N29 * (G48) + $M48), 0)
+  // N29 = Covenant multiple (from leverage test)
+  // G48 = Deal EBITDA
+  // M48 = Fees
+
+  // For pre-existing pipeline deals (different formula):
+  F139 = IF(F16 > 0, (F$186 * (F16 + F22) + $M16), 0)
+  // F$186 = Year-level leverage multiple (from debt schedule section)
+</div>
+
+<div class="formula-block">
+  <span class="label js">JavaScript</span>
+  function calcDebtCapacity(acquisition, covenantMultiple) {
+    return (covenantMultiple * acquisition.ebitda) + acquisition.fees;
+  }
+</div>
+
+<!-- ============================================================ -->
+<h2 id="deferrals"><span class="section-num">16</span>Deferred Consideration</h2>
+
+<p>Part of the purchase price is deferred — typically 25% deferred by 1 year, with larger deals also having a 15% 2-year deferral. This reduces the upfront funding requirement.</p>
+
+<div class="formula-block">
+  <span class="label">Excel</span>
+  // Row 160: 1-year deferred consideration
+  G160 = G48 * ($L48 * $L$159)        // EBITDA × multiple × 25%
+  // L159 = 0.25 (25% deferred 1 year)
+
+  // Row 165: 2-year deferred consideration (larger FY28 deals only)
+  I165 = I53 * ($L53 * $L$159)        // 25% 1-year deferral
+       + I53 * ($L53 * $L$160)        // + 15% 2-year deferral
+  // L160 = 0.15 (15% deferred 2 years)
+</div>
+
+<div class="formula-block">
+  <span class="label js">JavaScript</span>
+  const DEFERRAL_1YR = 0.25;  // 25% deferred 1 year
+  const DEFERRAL_2YR = 0.15;  // 15% deferred 2 years (larger deals)
+
+  function calcDeferrals(acquisition) {
+    const purchasePrice = acquisition.ebitda * acquisition.purchaseMultiple;
+    const defer1yr = purchasePrice * DEFERRAL_1YR;
+
+    // 2-year deferral only for deals above a size threshold
+    const defer2yr = acquisition.hasTwoYearDeferral
+      ? purchasePrice * DEFERRAL_2YR
+      : 0;
+
+    return {
+      totalDeferred: defer1yr + defer2yr,
+      defer1yr,
+      defer2yr,
+      dueYear1: defer1yr,              // Cash outflow in year +1
+      dueYear2: defer2yr,              // Cash outflow in year +2
+    };
+  }
+</div>
+
+<div class="callout">
+  <strong>Cash flow timing:</strong> Deferred consideration reduces year-0 funding but creates cash obligations in future years. The HTML app must track when deferred amounts fall due and include them in the appropriate quarter/year's cash outflows. This is essential for accurate cash flow forecasting.
+</div>
+
+<!-- ============================================================ -->
+<h2 id="equity"><span class="section-num">17</span>Equity Requirement</h2>
+
+<p>Equity is the <strong>residual</strong> — whatever can't be funded by bank debt or deferrals must come from investor equity.</p>
+
+<div class="formula-block">
+  <span class="label">Excel</span>
+  // Row 175: Equity required per deal
+  G175 = IF(G128 - G143 - G160 > 0, (G128 - G143 - G160), 0)
+  // G128 = Total funding required
+  // G143 = Debt capacity
+  // G160 = Deferred consideration
+  // If debt + deferrals cover everything, equity = 0
+</div>
+
+<div class="formula-block">
+  <span class="label js">JavaScript</span>
+  function calcEquityRequired(funding, debtCapacity, totalDeferred) {
+    const residual = funding - debtCapacity - totalDeferred;
+    return Math.max(0, residual);  // Never negative
+  }
+
+  // Per deal:
+  function dealFundingSplit(acquisition, covenantMultiple) {
+    const totalFunding = calcFundingRequired(acquisition);
+    const debtCap = calcDebtCapacity(acquisition, covenantMultiple);
+    const deferrals = calcDeferrals(acquisition);
+    const equity = calcEquityRequired(totalFunding, debtCap, deferrals.totalDeferred);
+
+    return {
+      totalFunding,
+      bankDebt: Math.min(debtCap, totalFunding),
+      deferred: deferrals.totalDeferred,
+      equity,
+    };
+  }
+</div>
+
+<div class="flow">
+  <div class="step">Total Funding</div>
+  <div class="arrow">=</div>
+  <div class="step">Bank Debt (capped by covenant)</div>
+  <div class="arrow">+</div>
+  <div class="step">Deferred Consideration</div>
+  <div class="arrow">+</div>
+  <div class="step result">Equity (residual)</div>
+</div>
+
+<!-- ============================================================ -->
+<h2 id="debt-sched"><span class="section-num">18</span>Debt Schedule</h2>
+
+<p>The debt schedule tracks the bank facility — opening balance, drawdowns per acquisition, and available headroom. Drawdowns are constrained by the total facility capacity.</p>
+
+<h3>Total Facility Capacity</h3>
+<div class="formula-block">
+  <span class="label">Excel</span>
+  // Row 185: Group EBITDA (reference to row 98)
+  G185 = G98
+
+  // Row 186: Leverage multiple for the year
+  // = maximum covenant multiple of all deals completing that year
+  G186 = MAXIFS(N29:N36, M29:M36, "26")
+  // Takes the highest covenant ratio from all '26 deals
+
+  // Row 187: Total debt capacity
+  G187 = G186 * G185                   // Leverage × Group EBITDA
+</div>
+
+<h3>Drawdown Mechanics</h3>
+<div class="formula-block">
+  <span class="label">Excel</span>
+  // Row 189: Available headroom
+  G189 = IF(G187 - G192 > 0, G187 - G192, 0)
+  // G187 = Total capacity, G192 = Opening balance
+
+  // Row 192: Opening balance = prior year closing
+  G192 = F194
+
+  // Row 193: Drawdown during year
+  G193 = IF(G189 > 0, MIN((G151 + F168), G189), 0)
+  // G151 = debt capacity for this year's deals
+  // F168 = deferred consideration from prior year falling due
+  // Capped at available headroom
+
+  // Row 194: Closing balance
+  G194 = SUM(G192:G193)               // Opening + Drawdown
+
+  // Row 195: Remaining headroom
+  G195 = IF(G187 - G194 > 0, G187 - G194, 0)
+</div>
+
+<div class="formula-block">
+  <span class="label js">JavaScript</span>
+  function buildDebtSchedule(years) {
+    let openingBalance = 0;
+
+    return years.map(year => {
+      // Total capacity = leverage multiple × group EBITDA
+      const maxCovenant = Math.max(...year.deals.map(d => d.covenantMultiple));
+      const totalCapacity = maxCovenant * year.groupEbitda;
+
+      // Available headroom
+      const headroom = Math.max(0, totalCapacity - openingBalance);
+
+      // Required drawdown = new deal debt + prior deferred falling due
+      const requiredDrawdown = year.newDealDebt + year.deferredFallingDue;
+
+      // Actual drawdown (capped at headroom)
+      const drawdown = Math.min(requiredDrawdown, headroom);
+
+      // Closing balance
+      const closingBalance = openingBalance + drawdown;
+      const remainingHeadroom = Math.max(0, totalCapacity - closingBalance);
+
+      const result = {
+        openingBalance,
+        drawdown,
+        closingBalance,
+        totalCapacity,
+        headroom,
+        remainingHeadroom,
+      };
+
+      openingBalance = closingBalance;  // Carry forward
+      return result;
+    });
+  }
+</div>
+
+<!-- ============================================================ -->
+<h2 id="westbridge"><span class="section-num">19</span>WestBridge Loan Note (Compounding Interest)</h2>
+
+<p>WestBridge Capital provides a loan note at the platform level that compounds annually at 12.5%. Interest is <strong>not paid in cash</strong> — it accrues and compounds, growing the total obligation over time.</p>
+
+<div class="formula-block">
+  <span class="label">Excel</span>
+  // X17 = Principal (loan note amount)
+  // V18 = 12.5% annual rate
+
+  // Row 210: Accrued interest per year
+  E210 = $X$17 * $V$18                          // Year 1: principal × 12.5%
+  F210 = ($X$17 + E210) * $V$18                  // Year 2: (principal + yr1 interest) × 12.5%
+  G210 = ($X$17 + E210 + F210) * $V$18           // Year 3: compound
+  H210 = ($X$17 + E210 + F210 + G210) * $V$18    // Year 4: compound
+  I210 = ($X$17 + SUM(E210:H210)) * $V$18        // Year 5: compound
+</div>
+
+<div class="formula-block">
+  <span class="label js">JavaScript</span>
+  const WB_RATE = 0.125;  // 12.5% annual compounding
+
+  function calcWestBridgeSchedule(principal, years) {
+    let totalAccrued = 0;
+    const schedule = [];
+
+    for (let i = 0; i < years; i++) {
+      const yearInterest = (principal + totalAccrued) * WB_RATE;
+      totalAccrued += yearInterest;
+      schedule.push({
+        year: i + 1,
+        openingBalance: principal + totalAccrued - yearInterest,
+        interestAccrued: yearInterest,
+        closingBalance: principal + totalAccrued,
+      });
+    }
+
+    return {
+      schedule,
+      totalOwed: principal + totalAccrued,  // At exit
+      totalInterest: totalAccrued,
+    };
+  }
+</div>
+
+<div class="callout">
+  <strong>Key:</strong> WestBridge interest does NOT appear in the cash flow waterfall — it only crystalises at exit when the loan note is repaid from exit proceeds. This means the cash flow model is "cleaner" but the exit waterfall must deduct the full compounded amount.
+</div>
+
+<!-- ============================================================ -->
+<h2 id="exit"><span class="section-num">20</span>Exit Valuation & Investor Returns</h2>
+
+<p>The exit model calculates enterprise value, then waterfalls through all obligations to arrive at equity value and individual investor returns.</p>
+
+<h3>Enterprise Value at Exit</h3>
+<div class="formula-block">
+  <span class="label">Excel</span>
+  X7 = I98                             // Exit-year Group EBITDA
+  X8 = 12                              // Exit multiple (user input)
+  X9 = X8 * X7                         // Enterprise Value = 12 × EBITDA
+</div>
+
+<h3>Equity Waterfall</h3>
+<div class="formula-block">
+  <span class="label">Excel</span>
+  X9  = EV (Enterprise Value)
+  X10 = +Cumulative cash at exit        // Cash on balance sheet
+  X11 = -Bank debt (closing balance)     // Repay senior debt
+  X12 = -WestBridge loan note principal  // Repay loan note
+  X13 = -Accrued WB interest             // Repay compounded interest
+  X14 = -HP outstanding                  // Repay hire purchase
+  X15 = -Deferred consideration due      // Any outstanding deferrals
+  ...
+  X21 = SUM(X9:X20)                     // = Equity Value to shareholders
+</div>
+
+<div class="formula-block">
+  <span class="label js">JavaScript</span>
+  function calcExitWaterfall(exitYear) {
+    const ev = exitYear.groupEbitda * exitMultiple;
+
+    const equityValue = ev
+      + exitYear.cumulativeCash          // Add cash balance
+      - exitYear.bankDebtClosing         // Repay bank debt
+      - westBridge.totalOwed             // Repay loan note + accrued interest
+      - exitYear.hpOutstanding           // Repay HP
+      - exitYear.deferredOutstanding;    // Repay any outstanding deferrals
+
+    return { ev, equityValue };
+  }
+</div>
+
+<h3>Shareholder Returns Split</h3>
+<div class="formula-block">
+  <span class="label">Excel</span>
+  // Equity split by investor:
+  X23 = V23 * $X$21                    // WB III LP = 47.9% × equity
+  X24 = V24 * $X$21                    // WB III Co-Invest = 5.3%
+  X25 = V25 * $X$21                    // WB EIS = 5.3%
+  X26 = V26 * $X$21                    // Management sweet equity = 20%
+  X27 = V27 * $X$21                    // Survey Solutions = 21.4%
+
+  // Money-on-Money return:
+  X31 = X30 / X29                      // Total return / Total invested
+</div>
+
+<div class="formula-block">
+  <span class="label js">JavaScript</span>
+  const EQUITY_SPLITS = [
+    { name: "WB III LP",        pct: 0.479 },
+    { name: "WB III Co-Invest", pct: 0.053 },
+    { name: "WB EIS",           pct: 0.053 },
+    { name: "Management",       pct: 0.200 },
+    { name: "Survey Solutions",  pct: 0.214 },
+  ];
+
+  function calcInvestorReturns(equityValue, totalInvested) {
+    const splits = EQUITY_SPLITS.map(investor => ({
+      ...investor,
+      returnAmount: equityValue * investor.pct,
+    }));
+
+    const mom = equityValue / totalInvested;  // Money-on-Money
+    const irr = null;  // Requires NPV/IRR calculation with timing
+
+    return { splits, mom, irr };
+  }
+</div>
+
+<!-- ============================================================ -->
+<h2 id="quarterly"><span class="section-num">21</span>Quarterly Model Conversion</h2>
+
+<p>The Excel model is annual. The HTML app should be quarterly. Here's how to convert each element.</p>
+
+<table>
+  <tr><th>Element</th><th>Annual (Excel)</th><th>Quarterly (HTML App)</th></tr>
+  <tr><td>Revenue</td><td>Annual total</td><td><code>annualRevenue / 4</code> (or seasonal weighting if provided)</td></tr>
+  <tr><td>Revenue growth</td><td><code>× (1 + rate)</code></td><td><code>× (1 + rate)^(1/4)</code> per quarter</td></tr>
+  <tr><td>EBITDA</td><td>Annual total</td><td><code>annualEbitda / 4</code> (margin × quarterly revenue)</td></tr>
+  <tr><td>Acquisition EBITDA</td><td>Full year in completion year</td><td>Pro-rated: Q3 deal → 50% in year (2/4 quarters)</td></tr>
+  <tr><td>Synergy phase-in</td><td>Annual % lookup</td><td>Linear interpolation within the year</td></tr>
+  <tr><td>Interest</td><td>Full year on all balances</td><td><code>balance × rate / 4</code> per quarter</td></tr>
+  <tr><td>Working capital</td><td><code>growth / 6</code></td><td><code>quarterly_growth × (2/3)</code> (2 months of quarterly growth)</td></tr>
+  <tr><td>Capex</td><td>Annual spend</td><td><code>annual / 4</code> (unless lumpy)</td></tr>
+  <tr><td>HP repayment</td><td>Annual repayment</td><td><code>annual / 4</code></td></tr>
+  <tr><td>Deferred consideration</td><td>Falls due in a specific year</td><td>Falls due in a specific quarter (e.g., Q3+4 = Q3 of next year)</td></tr>
+</table>
+
+<h3>Quarterly Acquisition EBITDA Pro-Rating</h3>
+<div class="formula-block">
+  <span class="label js">JavaScript</span>
+  function quarterlyAcqEbitda(acquisition, targetQuarter, targetYear) {
+    const dealQ = parseInt(extractQuarter(acquisition.completionQuarter).slice(1)); // 1-4
+    const dealYr = extractYear(acquisition.completionQuarter);
+
+    if (targetYear !== dealYr) {
+      // Not the completion year — handled by vintage growth
+      return 0;
+    }
+
+    // In completion year: only quarters from deal quarter onwards contribute
+    const qNum = parseInt(targetQuarter.slice(1));  // 1-4
+    if (qNum >= dealQ) {
+      return acquisition.ebitda / 4;  // Equal quarterly split
+    }
+    return 0;
+  }
+</div>
+
+<!-- ============================================================ -->
+<h2 id="data-structs"><span class="section-num">22</span>Recommended Data Structures</h2>
+
+<p>These are the core data structures the HTML app should use to drive all calculations.</p>
+
+<div class="formula-block">
+  <span class="label data">Data Model</span>
+  // Core business entity
+  interface CoreEntity {
+    name: string;             // "LSS", "JWG", "S/Tec"
+    baseRevenue: number;      // FY25 base (£'000)
+    growthRate: number;       // Annual growth (e.g., 0.09)
+    gpMargin: number;         // Gross profit margin (e.g., 0.43)
+    overheadPct: number;      // Overhead % of gross revenue (e.g., 0.225)
+  }
+
+  // Acquisition (from shortlist)
+  interface Acquisition {
+    id: string;
+    name: string;
+    completionQuarter: string;  // "Q3 26"
+    ebitda: number;             // £'000
+    ebitdaMargin: number;       // e.g., 0.27
+    purchaseMultiple: number;   // e.g., 5.0
+    fees: number;               // £'000
+    synergy: number;            // Annual synergy EBITDA (£'000)
+    hasTwoYearDeferral: boolean;
+    sequence: number;           // Order within the year (for covenant testing)
+  }
+
+  // Model parameters (user-configurable)
+  interface ModelParams {
+    bankRate: number;           // 0.1075
+    hpRate: number;             // 0.085
+    capexPct: number;           // 0.03
+    acqGrowthRate: number;      // 0.05
+    deferral1yr: number;        // 0.25
+    deferral2yr: number;        // 0.15
+    exitMultiple: number;       // 12
+    wbRate: number;             // 0.125
+    wbPrincipal: number;        // £'000
+    covenants: CovenantTier[];  // Stepped leverage limits
+    subconRetention: number;    // 0.9
+    wcMonths: number;           // 2
+    equitySplits: EquitySplit[];
+  }
+
+  // Year/Quarter output
+  interface PeriodOutput {
+    period: string;             // "FY26" or "Q3 26"
+    coreRevenue: number;
+    acquiredRevenue: number;
+    groupRevenue: number;
+    coreEbitda: number;
+    acquiredEbitda: number;
+    synergies: number;
+    groupEbitda: number;
+    bankInterest: number;
+    hpInterest: number;
+    hpCapital: number;
+    cashCapex: number;
+    workingCapital: number;
+    tax: number;
+    netCash: number;
+    cumulativeCash: number;
+    // Funding
+    totalFunding: number;
+    bankDebt: number;
+    deferred: number;
+    equity: number;
+    // Debt schedule
+    debtOpening: number;
+    debtDrawdown: number;
+    debtClosing: number;
+    debtHeadroom: number;
+  }
+</div>
+
+<!-- ============================================================ -->
+<h2 id="calc-order"><span class="section-num">23</span>Calculation Order (Dependency Graph)</h2>
+
+<p>The calculations have strict dependencies. The HTML app must execute them in this order to avoid circular references.</p>
+
+<div class="formula-block">
+  <span class="label logic">Execution Order</span>
+  STEP 1: Parse inputs
+    ├── Core entities (base revenue, growth rates, margins)
+    ├── Acquisition list (from shortlist, with quarters assigned)
+    └── Model parameters
+
+  STEP 2: For each period (year or quarter), in chronological order:
+
+    2a. Core Business
+        ├── Core gross revenue = base × (1 + growth)^n
+        ├── Core net revenue = gross × subcon retention
+        ├── Core GP = net revenue × GP margin
+        ├── Core overheads = gross revenue × OH% × -1
+        └── Core EBITDA = GP + overheads
+
+    2b. Acquisition Routing
+        ├── Route each deal's EBITDA to completion period
+        ├── Calculate synergy phase-in amounts
+        └── Pro-rate for partial periods (quarterly model)
+
+    2c. EBITDA Build-Up
+        ├── New acquisition EBITDA (deals completing this period)
+        ├── Synergies phasing in
+        ├── Prior vintage EBITDA (grown at 5%)
+        └── Group EBITDA = core + all acquired layers
+
+    2d. Leverage & Funding (per acquisition, in sequence)
+        ├── Running EBITDA (core + cumulative acquired)
+        ├── Covenant multiple lookup
+        ├── Funding required = EBITDA × multiple + fees
+        ├── Debt capacity = covenant × EBITDA + fees
+        ├── Deferred consideration
+        └── Equity = MAX(0, funding - debt - deferred)
+
+    2e. Revenue (depends on EBITDA + margins)
+        ├── Acquired revenue = acquired EBITDA / margin
+        └── Group revenue = core + pipeline + acquired
+
+    2f. Cash Flow Waterfall
+        ├── Capex = 3% of group revenue → split cash / HP
+        ├── HP schedule (interest + capital repayment)
+        ├── Working capital = 2 months of EBITDA growth
+        ├── Bank interest = (opening debt + drawdown) × rate
+        ├── Tax = 0 (losses b/f)
+        ├── Net cash = EBITDA + all the above
+        └── Cumulative cash = prior + net cash
+
+    2g. Debt Schedule
+        ├── Opening = prior closing
+        ├── Capacity = leverage × group EBITDA
+        ├── Headroom = capacity - opening
+        ├── Drawdown = MIN(required, headroom)
+        └── Closing = opening + drawdown
+
+  STEP 3: Exit & Returns (once, at end of projection)
+    ├── WestBridge compound interest schedule
+    ├── Exit EV = EBITDA × exit multiple
+    ├── Equity waterfall (EV + cash - debt - notes - HP - deferrals)
+    ├── Investor splits
+    └── MoM return
+</div>
+
+<div class="callout key">
+  <strong>Note on circular references:</strong> The Excel model has a near-circular dependency: bank interest depends on debt drawdown, which depends on debt capacity, which depends on EBITDA, which drives the cash flow that affects cumulative cash. However, this is resolved because bank interest uses opening balance + drawdown (not closing), and debt capacity is based on EBITDA (not cash). The HTML app should follow the same sequential approach — never reference a period's closing debt balance in that same period's interest calculation.
+</div>
+
+<!-- ============================================================ -->
+<h2 id="appendix-deals"><span class="section-num">A</span>Appendix: Full Deal Pipeline Data</h2>
+
+<h3>Pipeline Deals (Pre-Existing)</h3>
+<table>
+  <tr><th>Deal</th><th>FY</th><th>EBITDA (£'000)</th><th>Revenue (£'000)</th><th>Synergy Yr1</th><th>Synergy Yr2</th></tr>
+  <tr><td>CCGI</td><td>FY26</td><td>1,100</td><td>7,100 (combined)</td><td>75</td><td>225</td></tr>
+  <tr><td>SiteEye</td><td>FY26</td><td>400</td><td>(incl. above)</td><td>—</td><td>—</td></tr>
+</table>
+
+<h3>Bolt-On Acquisitions (From Shortlist)</h3>
+<table>
+  <tr><th>#</th><th>Name / Description</th><th>Quarter</th><th>EBITDA</th><th>Margin</th><th>Multiple</th><th>Fees</th><th>Synergy</th><th>Total Cost</th></tr>
+  <tr><td>1</td><td>GeoTechnical Obs</td><td>Q3 26</td><td>550</td><td>20%</td><td>4.00x</td><td>250</td><td>0</td><td>2,450</td></tr>
+  <tr><td>2</td><td>Anthony Brookes / Met Geo</td><td>Q4 26</td><td>450</td><td>22%</td><td>4.00x</td><td>250</td><td>0</td><td>2,050</td></tr>
+  <tr><td>3</td><td>Spectrum / Maltby</td><td>Q2 27</td><td>750</td><td>14%</td><td>4.75x</td><td>300</td><td>75</td><td>3,863</td></tr>
+  <tr><td>4</td><td>Geol / Morris Group</td><td>Q3 27</td><td>750</td><td>14%</td><td>4.75x</td><td>300</td><td>75</td><td>3,863</td></tr>
+  <tr><td>5</td><td>Soiltechnics</td><td>Q4 27</td><td>750</td><td>14%</td><td>4.75x</td><td>300</td><td>75</td><td>3,863</td></tr>
+  <tr><td>6</td><td>Zetica / Geotechnics</td><td>Q1 28</td><td>1,000</td><td>14%</td><td>5.25x</td><td>350</td><td>100</td><td>5,600</td></tr>
+  <tr><td>7</td><td>Technics Group / SML</td><td>Q2 28</td><td>1,500</td><td>14%</td><td>5.75x</td><td>350</td><td>150</td><td>8,975</td></tr>
+  <tr><td>8</td><td>WDM / LS Transmission</td><td>Q4 28</td><td>1,500</td><td>14%</td><td>6.00x</td><td>350</td><td>150</td><td>9,350</td></tr>
+</table>
+
+<h3>Covenant Thresholds</h3>
+<table>
+  <tr><th>Running EBITDA</th><th>Max Leverage</th><th>Excel Location</th></tr>
+  <tr><td>&lt; £3,500k</td><td>3.00x</td><td>E220/F220</td></tr>
+  <tr><td>£3,500k – £5,000k</td><td>3.25x</td><td>E221/F221</td></tr>
+  <tr><td>&gt; £5,000k</td><td>3.75x</td><td>E222/F222</td></tr>
+  <tr><td>&gt; £10,000k</td><td>4.00x</td><td>(not yet activated)</td></tr>
+</table>
+
+<!-- ============================================================ -->
+<h2 id="appendix-notes"><span class="section-num">B</span>Appendix: Excel Model Quirks & Notes</h2>
+
+<div class="callout warn">
+  <strong>1. Hardcoded FY25/FY26 values:</strong> Core entity revenues (rows 73–75) are hardcoded for FY25 and FY26. The compound growth formula only applies from FY27 onwards. The HTML app should allow users to override any year's value or let it auto-calculate.
+</div>
+
+<div class="callout warn">
+  <strong>2. Variable subcontractor retention:</strong> Net revenue uses different multipliers each year — 90% (FY25), 91.446% (FY26), 91% (FY27+). This should be a configurable parameter per year in the HTML app.
+</div>
+
+<div class="callout warn">
+  <strong>3. FY28 leverage formula bug:</strong> Cell I186 uses <code>MAXIFS(N29:N36, M29:M36, 27)</code> instead of <code>27 → 28</code>. This means FY28's facility leverage uses FY27's covenant multiple (3.75x) instead of potentially looking up a higher FY28 value. The HTML app should use the correct year.
+</div>
+
+<div class="callout warn">
+  <strong>4. Two WestBridge loan notes:</strong> The model tracks TWO separate loan note tranches:
+  <br>• Tranche 1 (row 210): Principal at X17 = -£15,721k, rate at V18 = 12.5%
+  <br>• Tranche 2 (row 212): Principal at X19, rate at V20
+  <br>Both compound independently and sum at row 214.
+</div>
+
+<div class="callout warn">
+  <strong>5. Acquisition synergies for deals 1 & 2:</strong> These have zero synergies (L58=0, L59=0) in the current model, even though they are the first bolt-on deals. This may be intentional (pure EBITDA consolidation) or an area for the user to adjust.
+</div>
+
+<div class="callout">
+  <strong>6. Column L dual-purpose:</strong> In the acquisition rows (29–36), column L contains the <em>running total EBITDA</em> (for covenant testing), NOT the purchase multiple. The purchase multiples are in L48:L55 (the EBITDA-by-year section). The HTML app should keep these as separate data fields.
+</div>
+
+</main>
+
+<script>
+  // Highlight active nav item on scroll
+  const sections = document.querySelectorAll('h2[id]');
+  const navLinks = document.querySelectorAll('.sidebar a');
+
+  window.addEventListener('scroll', () => {
+    let current = '';
+    sections.forEach(section => {
+      const top = section.offsetTop - 100;
+      if (scrollY >= top) current = section.id;
+    });
+    navLinks.forEach(link => {
+      link.classList.remove('active');
+      if (link.getAttribute('href') === '#' + current) {
+        link.classList.add('active');
+      }
+    });
+  });
+</script>
+
+</body>
+</html>
