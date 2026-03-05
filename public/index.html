@@ -2112,13 +2112,13 @@
             <button class="tab-button active" onclick="switchTab('dashboard')">Dashboard</button>
             <button class="tab-button" onclick="switchTab('longlist')">Long List</button>
             <button class="tab-button" onclick="switchTab('shortlist')">Short List</button>
+            <button class="tab-button" onclick="switchTab('acqmodel')">📊 Acq Model</button>
             <button class="tab-button" onclick="switchTab('dcf')">DCF Valuation</button>
             <button class="tab-button" onclick="switchTab('companies-house')">Companies House</button>
             <button class="tab-button" onclick="switchTab('import')">Import</button>
             <button class="tab-button" onclick="switchTab('settings')">⚙️ Settings</button>
                         <button class="tab-button" onclick="switchTab('chat')">💬 AI Assistant</button>
             <button class="tab-button" onclick="switchTab('trends')">📈 Trends</button>
-            <button class="tab-button" onclick="switchTab('acqmodel')">📊 Acq Model</button>
             </div>
 
         <!-- DASHBOARD TAB -->
@@ -4149,6 +4149,7 @@ const companiesData = {"longList":[{"name":"CITY SURVEYS & MONITORING LTD (XRAIL
                     '<td><div class="action-buttons">' +
                         '<button class="btn btn-small" onclick="viewCompanyDetail(\'' + escapedName + '\')" title="View details">👁</button>' +
                         '<button class="btn btn-small" onclick="openSecondStageModal(\'' + escapedName + '\')" title="Edit scoring">📊</button>' +
+                        '<button class="btn btn-small" style="background: var(--accent);" onclick="sendToModel(\'' + escapedName + '\')" title="Add to Model">🚀</button>' +
                         '<button class="btn btn-small btn-danger" onclick="unstarCompany(\'' + escapedName + '\')" title="Remove">✕</button>' +
                     '</div></td>';
                 tbody.appendChild(row);
@@ -4222,6 +4223,7 @@ const companiesData = {"longList":[{"name":"CITY SURVEYS & MONITORING LTD (XRAIL
                         <button class="btn btn-small" onclick="openSecondStageModal('${company.name.replace(/'/g, "\\'")}')" title="Edit second stage scoring">📊 Score</button>
                         <button class="btn btn-small" onclick="openCreditCheckModal('${company.name.replace(/'/g, "\\'")}')" title="Credit risk assessment">🔍 Credit</button>
                         <button class="btn btn-small" onclick="openSwotModal('${company.name.replace(/'/g, "\\'")}')" title="SWOT analysis">📋 SWOT</button>
+                        <button class="btn btn-small" style="background: var(--accent);" onclick="sendToModel('${company.name.replace(/'/g, "\\'")}')" title="Add to Acquisition Model">🚀 To Model</button>
                         <button class="btn btn-small btn-danger" onclick="unstarCompany('${company.name.replace(/'/g, "\\'")}')" title="Remove from shortlist">✕ Unstar</button>
                         <button class="btn btn-small" onclick="searchCompaniesHouse('${company.name.replace(/'/g, "\\'")}')" title="Companies House lookup">🔍 CH</button>
                         <button class="icon-button" onclick="window.open('https://app.apollo.io/#/companies?query=' + encodeURIComponent('${company.name.replace(/'/g, "\\'")}'), '_blank')" title="Search on Apollo.io">🚀</button>
@@ -4250,6 +4252,73 @@ const companiesData = {"longList":[{"name":"CITY SURVEYS & MONITORING LTD (XRAIL
             renderLongList();
             renderShortList();
             updateDashboard();
+        }
+
+        function sendToModel(companyName) {
+            // Check if already in model
+            if (acqModelSequence && acqModelSequence.find(d => d.name === companyName)) {
+                alert(companyName + ' is already in the Acquisition Model');
+                return;
+            }
+            const comp = allCompanies.find(c => c.name === companyName);
+            if (!comp) return;
+
+            // Normalize financial data
+            var rawRevenue = comp.revenue || 0;
+            var realRevenue = rawRevenue > 100000 ? Math.round(rawRevenue / 1000) : Math.round(rawRevenue);
+            var rawEbitda = comp.ebitda || 0;
+            var realEbitda = rawEbitda > 100000 ? Math.round(rawEbitda / 1000) : Math.round(rawEbitda);
+            var realMargin = realRevenue > 0 && realEbitda > 0 ? realEbitda / realRevenue : 0.15;
+
+            // Get stage 2 scores
+            var s2Total = calcS2Total(comp);
+
+            // Find first empty quarter
+            var quarters = [];
+            for (var y = 26; y <= 28; y++) {
+                for (var qi = 0; qi < 4; qi++) {
+                    quarters.push(['Q1','Q2','Q3','Q4'][qi] + ' ' + y);
+                }
+            }
+            var targetQuarter = quarters[0];
+            for (var i = 0; i < quarters.length; i++) {
+                var dealsInQ = acqModelSequence.filter(function(d) { return d.quarter === quarters[i]; });
+                if (dealsInQ.length === 0) {
+                    targetQuarter = quarters[i];
+                    break;
+                }
+            }
+
+            var newDeal = {
+                name: companyName,
+                quarter: targetQuarter,
+                ebitda: realEbitda,
+                margin: parseFloat(realMargin.toFixed(4)),
+                multiple: 5.0,
+                fees: 300,
+                synergy: 0,
+                hasDeferral2yr: false,
+                revenue: realRevenue,
+                employees: comp.employees || 0,
+                s1Score: comp.score || 0,
+                s2Score: s2Total,
+                stage2: {
+                    costSynergies: getCompanyCriterionValue(comp, 'costSynergies'),
+                    crossSelling: getCompanyCriterionValue(comp, 'crossSelling'),
+                    financialStability: getCompanyCriterionValue(comp, 'financialStability'),
+                    cashGeneration: getCompanyCriterionValue(comp, 'cashGeneration'),
+                    keyPeopleRisk: getCompanyCriterionValue(comp, 'keyPeopleRisk'),
+                    customerConcentration: getCompanyCriterionValue(comp, 'customerConcentration'),
+                    integratability: getCompanyCriterionValue(comp, 'integratability'),
+                    accreditations: getCompanyCriterionValue(comp, 'accreditations')
+                }
+            };
+
+            if (!acqModelSequence) acqModelSequence = [];
+            acqModelSequence.push(newDeal);
+            localStorage.setItem('acqModelSequence', JSON.stringify(acqModelSequence));
+
+            alert(companyName + ' added to Acquisition Model in ' + targetQuarter + '. Switch to the Acq Model tab to adjust timing.');
         }
 
         // ============================================================================
@@ -5168,6 +5237,18 @@ Generated on ${new Date().toLocaleString()}`;
 
         function closeSwotModal() {
             document.getElementById('swotModal').classList.remove('show');
+        }
+
+        function saveSwotData() {
+            if (!currentSwotCompany) return;
+            const data = {
+                strengths: document.getElementById('swotStrengths').value,
+                weaknesses: document.getElementById('swotWeaknesses').value,
+                opportunities: document.getElementById('swotOpportunities').value,
+                threats: document.getElementById('swotThreats').value
+            };
+            localStorage.setItem('swot_' + currentSwotCompany, JSON.stringify(data));
+            closeSwotModal();
         }
 
         function loadSwotData(companyName) {
@@ -6575,5 +6656,64 @@ Format as JSON: {"rating":"...","scores":{"financial":{"score":N,"note":"..."},"
 
                 window.addEventListener('DOMContentLoaded', init);
     </script>
+
+    <!-- Detail Modal -->
+    <div class="modal" id="detailModal" onclick="closeModal(event)">
+        <div class="modal-content" onclick="event.stopPropagation()">
+            <div class="modal-header">
+                <h2 class="modal-title" id="modalTitle">Company Details</h2>
+                <button class="close-btn" onclick="document.getElementById('detailModal').classList.remove('show')">×</button>
+            </div>
+            <div id="modalBody" style="padding: 20px; max-height: 70vh; overflow-y: auto;"></div>
+        </div>
+    </div>
+
+    <!-- SWOT Modal -->
+    <div class="modal" id="swotModal" onclick="closeSwotModal()">
+        <div class="modal-content" onclick="event.stopPropagation()">
+            <div class="modal-header">
+                <h2 class="modal-title">SWOT Analysis</h2>
+                <button class="close-btn" onclick="closeSwotModal()">×</button>
+            </div>
+            <div style="padding: 20px; max-height: 70vh; overflow-y: auto;">
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
+                    <div>
+                        <label style="font-weight: 600; color: #22c55e; display: block; margin-bottom: 5px;">Strengths</label>
+                        <textarea id="swotStrengths" class="form-input" rows="6" style="width:100%;resize:vertical;"></textarea>
+                    </div>
+                    <div>
+                        <label style="font-weight: 600; color: #ef4444; display: block; margin-bottom: 5px;">Weaknesses</label>
+                        <textarea id="swotWeaknesses" class="form-input" rows="6" style="width:100%;resize:vertical;"></textarea>
+                    </div>
+                    <div>
+                        <label style="font-weight: 600; color: #3b82f6; display: block; margin-bottom: 5px;">Opportunities</label>
+                        <textarea id="swotOpportunities" class="form-input" rows="6" style="width:100%;resize:vertical;"></textarea>
+                    </div>
+                    <div>
+                        <label style="font-weight: 600; color: #f59e0b; display: block; margin-bottom: 5px;">Threats</label>
+                        <textarea id="swotThreats" class="form-input" rows="6" style="width:100%;resize:vertical;"></textarea>
+                    </div>
+                </div>
+                <div style="margin-top: 15px; display: flex; gap: 10px;">
+                    <button class="btn" onclick="saveSwotData()">💾 Save</button>
+                    <button class="btn btn-secondary" onclick="closeSwotModal()">Cancel</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Credit Check Modal -->
+    <div class="modal" id="creditCheckModal" onclick="closeCreditCheckModal()">
+        <div class="modal-content" onclick="event.stopPropagation()">
+            <div class="modal-header">
+                <h2 class="modal-title">AI Credit Assessment: <span id="creditCompanyName"></span></h2>
+                <button class="close-btn" onclick="closeCreditCheckModal()">×</button>
+            </div>
+            <div style="padding: 20px;">
+                <div style="margin-bottom: 10px; font-size: 13px; color: var(--text-muted);">Status: <span id="creditCompanyStatus">Active</span></div>
+                <div id="creditScoresContainer" style="max-height: 60vh; overflow-y: auto;"></div>
+            </div>
+        </div>
+    </div>
 </body>
 </html>
