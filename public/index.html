@@ -5933,7 +5933,7 @@ Generated on ${new Date().toLocaleString()}`;
             document.getElementById('creditCompanyStatus').textContent = company ? (company.status || 'Active') : 'Unknown';
             
             // Check for API key
-            const apiKey = localStorage.getItem('anthropicApiKey');
+            const apiKey = (localStorage.getItem('anthropicApiKey') || '').trim();
             if (!apiKey) {
                 const container = document.getElementById('creditScoresContainer');
                 container.innerHTML = '<div style="padding: 20px; background: var(--bg-tertiary); border-radius: 6px; color: var(--warning); border: 1px solid var(--warning);">⚠️ API Key Required: Set your Anthropic API key in Settings to enable AI-powered credit checks</div>';
@@ -5992,9 +5992,11 @@ Format as JSON: {"rating":"...","scores":{"financial":{"score":N,"note":"..."},"
                 });
                 
                 if (!response.ok) {
-                    throw new Error(`API Error: ${response.status} ${response.statusText}`);
+                    var errBody = await response.json().catch(function() { return {}; });
+                    var errMsg = (errBody.error && errBody.error.message) ? errBody.error.message : response.statusText;
+                    throw new Error('API ' + response.status + ': ' + errMsg);
                 }
-                
+
                 const data = await response.json();
                 const content = data.content[0].text;
                 
@@ -6262,7 +6264,7 @@ Format as JSON: {"rating":"...","scores":{"financial":{"score":N,"note":"..."},"
         // ENHANCED AI CHAT WITH CLAUDE API
         // ============================================================================
         async function processChatWithAI(message) {
-            const apiKey = localStorage.getItem('anthropicApiKey');
+            const apiKey = (localStorage.getItem('anthropicApiKey') || '').trim();
             if (!apiKey) {
                 addChatMessage('API key not configured. Set your Anthropic API key in Settings.', 'assistant');
                 return;
@@ -6297,9 +6299,11 @@ Format as JSON: {"rating":"...","scores":{"financial":{"score":N,"note":"..."},"
                 });
                 
                 if (!response.ok) {
-                    throw new Error(`API Error: ${response.status}`);
+                    var errBody = await response.json().catch(function() { return {}; });
+                    var errMsg = (errBody.error && errBody.error.message) ? errBody.error.message : response.statusText;
+                    throw new Error('API ' + response.status + ': ' + errMsg);
                 }
-                
+
                 const data = await response.json();
                 const lastMessage = document.querySelector('.chat-bubble.assistant:last-of-type');
                 if (lastMessage && lastMessage.textContent === '⏳ Thinking...') {
