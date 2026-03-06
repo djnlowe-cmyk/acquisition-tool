@@ -2686,6 +2686,20 @@
                     </div>
                 </div>
 
+                <!-- Endole API Key -->
+                <div class="settings-section">
+                    <h3 style="cursor:pointer; padding: 10px; background: var(--bg-tertiary); border-radius: 6px; margin-bottom: 10px;" onclick="this.nextElementSibling.style.display = this.nextElementSibling.style.display === 'none' ? 'block' : 'none'">
+                        📊 Endole API Key ▼
+                    </h3>
+                    <div>
+                        <div class="form-group">
+                            <label class="form-label">API Key</label>
+                            <input type="password" class="form-input" id="endoleApiKeySettings" placeholder="Enter your Endole API key" onchange="localStorage.setItem('endoleApiKey', this.value)">
+                            <p style="font-size: 12px; color: var(--text-muted); margin-top: 5px;">Used for enriched company data. Get your key from <a href="https://app.endole.co.uk/" target="_blank">Endole</a></p>
+                        </div>
+                    </div>
+                </div>
+
                 <!-- Anthropic API Key -->
                 <div class="settings-section">
                     <h3 style="cursor:pointer; padding: 10px; background: var(--bg-tertiary); border-radius: 6px; margin-bottom: 10px;" onclick="this.nextElementSibling.style.display = this.nextElementSibling.style.display === 'none' ? 'block' : 'none'">
@@ -3245,7 +3259,12 @@ const companiesData = {"longList":[{"name":"CITY SURVEYS & MONITORING LTD (XRAIL
         }
 
         function loadChApiKey() {
-            const apiKey = localStorage.getItem('chApiKey');
+            var apiKey = localStorage.getItem('chApiKey');
+            // Set default CH API key if none saved
+            if (!apiKey) {
+                apiKey = '822f7773-04e1-41ab-80b2-4b69ae1075f6';
+                localStorage.setItem('chApiKey', apiKey);
+            }
             if (apiKey && document.getElementById('chApiKeySettings')) {
                 document.getElementById('chApiKeySettings').value = apiKey;
             }
@@ -3399,13 +3418,24 @@ const companiesData = {"longList":[{"name":"CITY SURVEYS & MONITORING LTD (XRAIL
             document.getElementById('chModalBody').innerHTML = '<p style="padding: 20px; text-align: center;">Searching...</p>';
 
             const encoded = btoa(apiKey + ':');
-            fetch(`https://api.company-information.service.gov.uk/search/companies?q=${encodeURIComponent(query)}`, {
+            fetch('https://api.company-information.service.gov.uk/search/companies?q=' + encodeURIComponent(query), {
                 headers: { 'Authorization': 'Basic ' + encoded }
             })
-            .then(r => r.json())
-            .then(data => displayCompaniesHouseResults(data, query))
-            .catch(err => {
-                document.getElementById('chModalBody').innerHTML = `<p style="padding: 20px; color: var(--danger);">Error: ${err.message}</p>`;
+            .then(function(r) {
+                if (!r.ok) throw new Error('API returned ' + r.status);
+                return r.json();
+            })
+            .then(function(data) { displayCompaniesHouseResults(data, query); })
+            .catch(function(err) {
+                // CORS or API error — fall back to direct links
+                document.getElementById('chModalBody').innerHTML = '<div style="padding: 20px; text-align: center;">'
+                    + '<p style="margin-bottom: 10px; color: var(--warning);">Browser security (CORS) prevents direct API calls.</p>'
+                    + '<p style="margin-bottom: 15px; color: var(--text-muted);">Use these links to look up the company directly:</p>'
+                    + '<div style="display: flex; flex-direction: column; gap: 10px; align-items: center;">'
+                    + '<a href="https://find-and-update.company-information.service.gov.uk/search/companies?q=' + encodeURIComponent(query) + '" target="_blank" class="btn" style="width: 280px;">🏛️ Companies House Search</a>'
+                    + '<a href="https://app.endole.co.uk/explorer/postcode/?q=' + encodeURIComponent(query) + '" target="_blank" class="btn" style="width: 280px;">📊 Endole Search</a>'
+                    + '</div>'
+                    + '</div>';
             });
         }
 
@@ -5783,12 +5813,20 @@ Generated on ${new Date().toLocaleString()}`;
                 }
             });
             // Load API keys
-            const chKey = localStorage.getItem('chApiKey') || '';
-            const aiKey = localStorage.getItem('anthropicApiKey') || '';
-            const chInput = document.getElementById('chApiKeySettings');
-            const aiInput = document.getElementById('anthropicApiKeySettings');
+            var chKey = localStorage.getItem('chApiKey') || '';
+            var aiKey = localStorage.getItem('anthropicApiKey') || '';
+            var endoleKey = localStorage.getItem('endoleApiKey') || '';
+            // Set default Endole key if none saved
+            if (!endoleKey) {
+                endoleKey = 'pzPc5oK8mAmeEGXAdX9ydEFCf3xi8RC7';
+                localStorage.setItem('endoleApiKey', endoleKey);
+            }
+            var chInput = document.getElementById('chApiKeySettings');
+            var aiInput = document.getElementById('anthropicApiKeySettings');
+            var endoleInput = document.getElementById('endoleApiKeySettings');
             if (chInput) chInput.value = chKey;
             if (aiInput) aiInput.value = aiKey;
+            if (endoleInput) endoleInput.value = endoleKey;
         }
 
         // ============================================================================
