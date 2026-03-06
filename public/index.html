@@ -652,9 +652,49 @@
 
         .tile-actions {
             display: flex;
-            gap: 8px;
+            flex-wrap: wrap;
+            gap: 6px;
             margin-top: auto;
         }
+        .tile-actions .btn-row {
+            display: flex;
+            gap: 6px;
+            width: 100%;
+        }
+        .tile-actions .btn {
+            font-size: 11px;
+            padding: 4px 8px;
+        }
+        .btn-enrich {
+            background: #10B981; color: #fff; border: none;
+            padding: 4px 10px; border-radius: 4px; cursor: pointer;
+            font-size: 11px; font-weight: 600;
+            display: inline-flex; align-items: center; gap: 4px;
+        }
+        .btn-enrich:hover { background: #059669; }
+        .enrichment-modal-overlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.7); z-index: 2000;
+            display: flex; align-items: center; justify-content: center;
+            animation: fadeIn 0.3s ease;
+        }
+        .enrichment-modal-content {
+            background: var(--card-bg); border-radius: 12px; padding: 30px;
+            width: 90%; max-width: 600px; max-height: 80vh; overflow-y: auto;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+        }
+        .enrichment-modal-content h3 { margin-top: 0; }
+        .enrichment-grid {
+            display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin: 16px 0;
+        }
+        .enrichment-item { padding: 10px; background: var(--bg); border-radius: 8px; }
+        .enrichment-item label { font-size: 11px; color: var(--text-muted); text-transform: uppercase; display: block; margin-bottom: 4px; }
+        .enrichment-item span { font-weight: 600; font-size: 14px; }
+        .enrichment-links { display: flex; gap: 8px; margin-top: 16px; flex-wrap: wrap; }
+        .enrichment-links a { padding: 6px 14px; border-radius: 6px; text-decoration: none; font-size: 12px; font-weight: 600; color: #fff; }
+        .enrichment-links .link-linkedin { background: #0A66C2; }
+        .enrichment-links .link-website { background: #374151; }
+        .enrichment-links .link-twitter { background: #1DA1F2; }
 
         .modal {
             display: none;
@@ -2731,6 +2771,20 @@
                     </div>
                 </div>
 
+                <!-- Apollo API Key -->
+                <div class="settings-section">
+                    <h3 style="cursor:pointer; padding: 10px; background: var(--bg-tertiary); border-radius: 6px; margin-bottom: 10px;" onclick="this.nextElementSibling.style.display = this.nextElementSibling.style.display === 'none' ? 'block' : 'none'">
+                        🚀 Apollo.io API Key ▼
+                    </h3>
+                    <div>
+                        <div class="form-group">
+                            <label class="form-label">API Key</label>
+                            <input type="password" class="form-input" id="apolloApiKeySettings" placeholder="Enter your Apollo.io API key" onchange="localStorage.setItem('apolloApiKey', this.value)">
+                            <p style="font-size: 12px; color: var(--text-muted); margin-top: 5px;">Free tier available. Get your key from <a href="https://app.apollo.io/#/settings/integrations/api" target="_blank">Apollo.io Settings → API</a></p>
+                        </div>
+                    </div>
+                </div>
+
                 <!-- Anthropic API Key -->
                 <div class="settings-section">
                     <h3 style="cursor:pointer; padding: 10px; background: var(--bg-tertiary); border-radius: 6px; margin-bottom: 10px;" onclick="this.nextElementSibling.style.display = this.nextElementSibling.style.display === 'none' ? 'block' : 'none'">
@@ -4026,11 +4080,11 @@ const companiesData = {"longList":[{"name":"CITY SURVEYS & MONITORING LTD (XRAIL
                         ${company.revenue && company.employees ? '£' + Math.round((company.revenue / company.employees) / 1000) + 'k' : '—'}
                     </td>
                     <td>
-                        <div class="action-buttons">
+                        <div class="action-buttons" style="display:flex;gap:4px;flex-wrap:wrap;">
                             <button class="btn btn-small" onclick="viewCompanyDetail('${company.name.replace(/'/g, "\\'")}')" title="View details">👁</button>
-                            <button class="btn btn-small" onclick="searchCompaniesHouse('${company.name.replace(/'/g, "\\'")}')" title="Companies House lookup">🔍</button>
-                            <button class="btn-linkedin" onclick="window.open('https://www.linkedin.com/search/results/companies/?keywords=' + encodeURIComponent('${company.name.replace(/'/g, "\\'")}'), '_blank')" title="Search on LinkedIn"><svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433a2.062 2.062 0 01-2.063-2.065 2.064 2.064 0 112.063 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/></svg>LinkedIn</button>
-                            <button class="btn-apollo" onclick="window.open('https://app.apollo.io/#/companies?query=' + encodeURIComponent('${company.name.replace(/'/g, "\\'")}'), '_blank')" title="Search on Apollo.io">Apollo</button>
+                            <button class="btn btn-small" onclick="searchCompaniesHouse('${company.name.replace(/'/g, "\\'")}')" title="Companies House lookup">🏛</button>
+                            <button class="btn-enrich" onclick="enrichFromApollo('${company.name.replace(/'/g, "\\'")}')" title="Enrich company data">🔍</button>
+                            <button class="btn-linkedin" onclick="openLinkedIn('${company.name.replace(/'/g, "\\'")}')" title="View on LinkedIn"><svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433a2.062 2.062 0 01-2.063-2.065 2.064 2.064 0 112.063 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/></svg></button>
                         </div>
                     </td>
                 `;
@@ -4267,15 +4321,19 @@ const companiesData = {"longList":[{"name":"CITY SURVEYS & MONITORING LTD (XRAIL
                     <div class="tile-services">${company.services || 'No services listed'}</div>
 
                     <div class="tile-actions">
-                        <button class="btn btn-small" onclick="viewCompanyDetail('${company.name.replace(/'/g, "\\'")}')" title="View details">👁 Details</button>
-                        <button class="btn btn-small" onclick="openSecondStageModal('${company.name.replace(/'/g, "\\'")}')" title="Edit second stage scoring">📊 Score</button>
-                        <button class="btn btn-small" onclick="openCreditCheckModal('${company.name.replace(/'/g, "\\'")}')" title="Credit risk assessment">🔍 Credit</button>
-                        <button class="btn btn-small" onclick="openSwotModal('${company.name.replace(/'/g, "\\'")}')" title="SWOT analysis">📋 SWOT</button>
-                        <button class="btn btn-small" style="background: var(--accent);" onclick="sendToModel('${company.name.replace(/'/g, "\\'")}')" title="Add to Acquisition Model">🚀 To Model</button>
-                        <button class="btn btn-small btn-danger" onclick="unstarCompany('${company.name.replace(/'/g, "\\'")}')" title="Remove from shortlist">✕ Unstar</button>
-                        <button class="btn btn-small" onclick="searchCompaniesHouse('${company.name.replace(/'/g, "\\'")}')" title="Companies House lookup">🔍 CH</button>
-                        <button class="btn-linkedin" onclick="window.open('https://www.linkedin.com/search/results/companies/?keywords=' + encodeURIComponent('${company.name.replace(/'/g, "\\'")}'), '_blank')" title="Search on LinkedIn"><svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433a2.062 2.062 0 01-2.063-2.065 2.064 2.064 0 112.063 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/></svg>LinkedIn</button>
-                        <button class="btn-apollo" onclick="window.open('https://app.apollo.io/#/companies?query=' + encodeURIComponent('${company.name.replace(/'/g, "\\'")}'), '_blank')" title="Search on Apollo.io">Apollo</button>
+                        <div class="btn-row">
+                            <button class="btn btn-small" onclick="viewCompanyDetail('${company.name.replace(/'/g, "\\'")}')" title="View details">👁 Details</button>
+                            <button class="btn btn-small" onclick="openSecondStageModal('${company.name.replace(/'/g, "\\'")}')" title="Edit second stage scoring">📊 Score</button>
+                            <button class="btn btn-small" onclick="openCreditCheckModal('${company.name.replace(/'/g, "\\'")}')" title="Credit risk assessment">🔍 Credit</button>
+                            <button class="btn btn-small" onclick="openSwotModal('${company.name.replace(/'/g, "\\'")}')" title="SWOT analysis">📋 SWOT</button>
+                            <button class="btn btn-small" onclick="searchCompaniesHouse('${company.name.replace(/'/g, "\\'")}')" title="Companies House lookup">🏛 CH</button>
+                        </div>
+                        <div class="btn-row">
+                            <button class="btn btn-small" style="background: var(--accent);" onclick="sendToModel('${company.name.replace(/'/g, "\\'")}')" title="Add to Acquisition Model">🚀 Model</button>
+                            <button class="btn-enrich" onclick="enrichFromApollo('${company.name.replace(/'/g, "\\'")}')" title="Enrich company data">🔍 Enrich</button>
+                            <button class="btn-linkedin" onclick="openLinkedIn('${company.name.replace(/'/g, "\\'")}')" title="View on LinkedIn"><svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433a2.062 2.062 0 01-2.063-2.065 2.064 2.064 0 112.063 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/></svg>LinkedIn</button>
+                            <button class="btn btn-small btn-danger" onclick="unstarCompany('${company.name.replace(/'/g, "\\'")}')" title="Remove from shortlist">✕</button>
+                        </div>
                     </div>
                 `;
                 container.appendChild(tile);
@@ -5847,6 +5905,7 @@ Generated on ${new Date().toLocaleString()}`;
             var chKey = localStorage.getItem('chApiKey') || '';
             var aiKey = localStorage.getItem('anthropicApiKey') || '';
             var endoleKey = localStorage.getItem('endoleApiKey') || '';
+            var apolloKey = localStorage.getItem('apolloApiKey') || '';
             // Set default Endole key if none saved
             if (!endoleKey) {
                 endoleKey = 'pzPc5oK8mAmeEGXAdX9ydEFCf3xi8RC7';
@@ -5855,9 +5914,11 @@ Generated on ${new Date().toLocaleString()}`;
             var chInput = document.getElementById('chApiKeySettings');
             var aiInput = document.getElementById('anthropicApiKeySettings');
             var endoleInput = document.getElementById('endoleApiKeySettings');
+            var apolloInput = document.getElementById('apolloApiKeySettings');
             if (chInput) chInput.value = chKey;
             if (aiInput) aiInput.value = aiKey;
             if (endoleInput) endoleInput.value = endoleKey;
+            if (apolloInput) apolloInput.value = apolloKey;
         }
 
         // ============================================================================
@@ -6020,6 +6081,181 @@ Format as JSON: {"rating":"...","scores":{"financial":{"score":N,"note":"..."},"
             html += '</div>';
             
             container.innerHTML = html;
+        }
+
+        // ============================================================================
+        // APOLLO.IO COMPANY ENRICHMENT & LINKEDIN LOOKUP
+        // ============================================================================
+        function enrichFromApollo(companyName) {
+            // Check cache first
+            var cached = JSON.parse(localStorage.getItem('enrichmentCache') || '{}');
+            if (cached[companyName] && (Date.now() - cached[companyName]._cachedAt < 86400000)) {
+                showEnrichmentModal(companyName, cached[companyName]);
+                return;
+            }
+
+            var apolloKey = localStorage.getItem('apolloApiKey') || '';
+            if (!apolloKey) {
+                alert('Please set your Apollo.io API key in Settings first.\nGet a free key at app.apollo.io → Settings → API');
+                return;
+            }
+
+            // Show loading
+            var loadingDiv = document.createElement('div');
+            loadingDiv.className = 'enrichment-modal-overlay';
+            loadingDiv.id = 'enrichmentLoading';
+            loadingDiv.innerHTML = '<div class="enrichment-modal-content" style="text-align:center;padding:40px;">' +
+                '<div style="font-size:24px;margin-bottom:12px;">🔍</div>' +
+                '<div style="font-weight:600;">Enriching ' + companyName + '...</div>' +
+                '<div style="color:var(--text-muted);margin-top:8px;">Fetching data from Apollo.io</div></div>';
+            document.body.appendChild(loadingDiv);
+
+            // Clean company name for search
+            var cleanName = companyName.replace(/\s*(Ltd|Limited|PLC|plc|LLP|Inc|Corp)\s*/gi, '').trim();
+
+            fetch('https://api.apollo.io/api/v1/organizations/enrich?domain=&name=' + encodeURIComponent(cleanName), {
+                method: 'GET',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Cache-Control': 'no-cache',
+                    'x-api-key': apolloKey
+                }
+            })
+            .then(function(r) {
+                if (!r.ok) throw new Error('Apollo API returned ' + r.status);
+                return r.json();
+            })
+            .then(function(data) {
+                var el = document.getElementById('enrichmentLoading');
+                if (el) el.remove();
+
+                if (!data.organization) {
+                    alert('No enrichment data found for "' + companyName + '". Try searching manually on Apollo.io.');
+                    return;
+                }
+
+                var enriched = {
+                    name: data.organization.name || companyName,
+                    logo: data.organization.logo_url || '',
+                    description: data.organization.short_description || data.organization.seo_description || '',
+                    industry: data.organization.industry || '',
+                    employees: data.organization.estimated_num_employees || '',
+                    revenue: data.organization.annual_revenue_printed || '',
+                    founded: data.organization.founded_year || '',
+                    city: data.organization.city || '',
+                    state: data.organization.state || '',
+                    country: data.organization.country || '',
+                    linkedin: data.organization.linkedin_url || '',
+                    website: data.organization.website_url || '',
+                    twitter: data.organization.twitter_url || '',
+                    facebook: data.organization.facebook_url || '',
+                    phone: data.organization.phone || '',
+                    keywords: (data.organization.keywords || []).slice(0, 8),
+                    technologies: (data.organization.current_technologies || []).slice(0, 10).map(function(t) { return typeof t === 'string' ? t : t.name || ''; }),
+                    suborganizations: data.organization.suborganizations || [],
+                    _cachedAt: Date.now()
+                };
+
+                // Save to cache
+                cached[companyName] = enriched;
+                localStorage.setItem('enrichmentCache', JSON.stringify(cached));
+
+                showEnrichmentModal(companyName, enriched);
+            })
+            .catch(function(err) {
+                var el = document.getElementById('enrichmentLoading');
+                if (el) el.remove();
+                // CORS fallback
+                var fallbackHtml = '<div class="enrichment-modal-content">' +
+                    '<h3>🔍 Enrich: ' + companyName + '</h3>' +
+                    '<p style="color:var(--text-muted);">Direct API call blocked (CORS). Use these links to research manually:</p>' +
+                    '<div class="enrichment-links" style="margin-top:16px;">' +
+                    '<a class="link-linkedin" href="https://www.linkedin.com/search/results/companies/?keywords=' + encodeURIComponent(companyName) + '" target="_blank">🔗 LinkedIn</a>' +
+                    '<a class="link-website" href="https://app.apollo.io/#/companies?query=' + encodeURIComponent(companyName) + '" target="_blank">🚀 Apollo.io</a>' +
+                    '<a style="background:#059669;" href="https://www.endole.co.uk/search/?q=' + encodeURIComponent(companyName) + '" target="_blank">📊 Endole</a>' +
+                    '<a style="background:#1e3a5f;" href="https://find-and-update.company-information.service.gov.uk/search?q=' + encodeURIComponent(companyName) + '" target="_blank">🏛 Companies House</a>' +
+                    '</div>' +
+                    '<div style="margin-top:20px;text-align:right;">' +
+                    '<button class="btn" onclick="this.closest(\'.enrichment-modal-overlay\').remove()">Close</button></div></div>';
+                var overlay = document.createElement('div');
+                overlay.className = 'enrichment-modal-overlay';
+                overlay.innerHTML = fallbackHtml;
+                overlay.onclick = function(e) { if (e.target === overlay) overlay.remove(); };
+                document.body.appendChild(overlay);
+            });
+        }
+
+        function openLinkedIn(companyName) {
+            // Check enrichment cache for direct LinkedIn URL
+            var cached = JSON.parse(localStorage.getItem('enrichmentCache') || '{}');
+            if (cached[companyName] && cached[companyName].linkedin) {
+                window.open(cached[companyName].linkedin, '_blank');
+            } else {
+                // Fall back to search
+                window.open('https://www.linkedin.com/search/results/companies/?keywords=' + encodeURIComponent(companyName), '_blank');
+            }
+        }
+
+        function showEnrichmentModal(companyName, data) {
+            var existing = document.getElementById('enrichmentOverlay');
+            if (existing) existing.remove();
+
+            var location = [data.city, data.state, data.country].filter(Boolean).join(', ');
+            var keywordsHtml = '';
+            if (data.keywords && data.keywords.length > 0) {
+                keywordsHtml = '<div style="margin-top:12px;"><label style="font-size:11px;color:var(--text-muted);text-transform:uppercase;">Keywords</label>' +
+                    '<div style="display:flex;flex-wrap:wrap;gap:4px;margin-top:4px;">';
+                data.keywords.forEach(function(k) {
+                    keywordsHtml += '<span style="background:var(--accent);color:#fff;padding:2px 8px;border-radius:12px;font-size:11px;">' + k + '</span>';
+                });
+                keywordsHtml += '</div></div>';
+            }
+
+            var techHtml = '';
+            if (data.technologies && data.technologies.length > 0) {
+                techHtml = '<div style="margin-top:12px;"><label style="font-size:11px;color:var(--text-muted);text-transform:uppercase;">Technologies</label>' +
+                    '<div style="display:flex;flex-wrap:wrap;gap:4px;margin-top:4px;">';
+                data.technologies.forEach(function(t) {
+                    techHtml += '<span style="background:var(--bg);padding:2px 8px;border-radius:12px;font-size:11px;border:1px solid var(--border);">' + t + '</span>';
+                });
+                techHtml += '</div></div>';
+            }
+
+            var logoHtml = data.logo ? '<img src="' + data.logo + '" style="width:48px;height:48px;border-radius:8px;object-fit:contain;background:#fff;padding:4px;" onerror="this.style.display=\'none\'">' : '';
+
+            var html = '<div class="enrichment-modal-content">' +
+                '<div style="display:flex;justify-content:space-between;align-items:start;">' +
+                '<div style="display:flex;gap:12px;align-items:center;">' +
+                logoHtml +
+                '<div><h3 style="margin:0;">' + (data.name || companyName) + '</h3>' +
+                (data.industry ? '<span style="font-size:12px;color:var(--text-muted);">' + data.industry + '</span>' : '') +
+                '</div></div>' +
+                '<button class="btn btn-small" onclick="document.getElementById(\'enrichmentOverlay\').remove()" style="font-size:18px;background:none;border:none;cursor:pointer;">✕</button></div>' +
+                (data.description ? '<p style="margin-top:12px;color:var(--text-secondary);font-size:13px;line-height:1.5;">' + data.description + '</p>' : '') +
+                '<div class="enrichment-grid">' +
+                '<div class="enrichment-item"><label>Employees</label><span>' + (data.employees || '—') + '</span></div>' +
+                '<div class="enrichment-item"><label>Revenue</label><span>' + (data.revenue || '—') + '</span></div>' +
+                '<div class="enrichment-item"><label>Founded</label><span>' + (data.founded || '—') + '</span></div>' +
+                '<div class="enrichment-item"><label>Location</label><span>' + (location || '—') + '</span></div>' +
+                (data.phone ? '<div class="enrichment-item"><label>Phone</label><span>' + data.phone + '</span></div>' : '') +
+                '</div>' +
+                keywordsHtml + techHtml +
+                '<div class="enrichment-links">' +
+                (data.linkedin ? '<a class="link-linkedin" href="' + data.linkedin + '" target="_blank">🔗 LinkedIn</a>' : '') +
+                (data.website ? '<a class="link-website" href="' + data.website + '" target="_blank">🌐 Website</a>' : '') +
+                (data.twitter ? '<a class="link-twitter" href="' + data.twitter + '" target="_blank">🐦 Twitter</a>' : '') +
+                '</div>' +
+                '<div style="margin-top:16px;display:flex;gap:8px;justify-content:flex-end;">' +
+                '<button class="btn btn-small" onclick="localStorage.removeItem(\'enrichmentCache\');enrichFromApollo(\'' + companyName.replace(/'/g, "\\'") + '\');document.getElementById(\'enrichmentOverlay\').remove();" title="Refresh data">🔄 Refresh</button>' +
+                '<button class="btn" onclick="document.getElementById(\'enrichmentOverlay\').remove()">Close</button>' +
+                '</div></div>';
+
+            var overlay = document.createElement('div');
+            overlay.className = 'enrichment-modal-overlay';
+            overlay.id = 'enrichmentOverlay';
+            overlay.innerHTML = html;
+            overlay.onclick = function(e) { if (e.target === overlay) overlay.remove(); };
+            document.body.appendChild(overlay);
         }
 
         // ============================================================================
