@@ -2345,7 +2345,7 @@
                             <th onclick="sortTable('name')">Company Name ↕</th>
                             <th onclick="sortTable('region')">Region ↕</th>
                             <th onclick="sortTable('employees')">Employees ↕</th>
-                            <th onclick="sortTable('speciality')">Key Services ↕</th>
+                            <th onclick="sortTable('ownership')">Ownership ↕</th>
                             <th onclick="sortTable('score')">Score ↕</th>
                             <th>R1 / R2</th>
                             <th onclick="sortTable('revenue')">Revenue ↕</th>
@@ -3708,6 +3708,46 @@ const companiesData = {"longList": [{"name": "Andrews Hydrographics Limited", "s
             return '£' + Math.round(num).toLocaleString();
         }
 
+        function getOwnershipLabel(company) {
+            var ownership = company.ownership || '';
+            var ownerType = company.ownershipType || '';
+            // Check for known parent companies in ownership text
+            var parentPatterns = ['Socotec', 'Phenna', 'RSK', 'Woolpert', 'Amplus', 'Orica', 'Tetra Tech',
+                'Fugro', 'Arup', 'AECOM', 'Jacobs', 'Kier', 'Babcock', 'Balfour', 'Murphy Group',
+                'Ocean Infinity', 'Capita', 'Atkins', 'Costain', 'Mott MacDonald', 'Stantec',
+                'Intertek', 'Bureau Veritas', 'SGS', 'Applus', 'Element', 'Kiwa', 'TUV'];
+            for (var i = 0; i < parentPatterns.length; i++) {
+                if (ownership.toLowerCase().indexOf(parentPatterns[i].toLowerCase()) >= 0) {
+                    return parentPatterns[i];
+                }
+            }
+            // Check for acquired/owned indicators
+            if (ownership.toLowerCase().indexOf('acquired') >= 0) {
+                var match = ownership.match(/^([^(;,]+)/);
+                return match ? match[1].trim().substring(0, 25) : 'Acquired';
+            }
+            // Check for EOT/EBT
+            if (ownership.toLowerCase().indexOf('employee ownership') >= 0 || ownership.toLowerCase().indexOf('eot') >= 0) {
+                return 'EOT';
+            }
+            // If ownershipType is set, use it
+            if (ownerType) {
+                if (ownerType.indexOf('simple') >= 0) return 'Private';
+                if (ownerType.indexOf('complex') >= 0) return 'Private (complex)';
+                if (ownerType === 'Other') {
+                    var firstPart = ownership.split(';')[0].split('(')[0].trim();
+                    return firstPart.length > 25 ? firstPart.substring(0, 22) + '...' : (firstPart || 'Other');
+                }
+                return ownerType;
+            }
+            // Default: try first part of ownership string
+            if (ownership) {
+                var first = ownership.split(';')[0].split('(')[0].trim();
+                return first.length > 25 ? first.substring(0, 22) + '...' : first;
+            }
+            return '—';
+        }
+
         function formatRevenuePerEmployee(val) {
             if (!val || val === 'N/A') return 'N/A';
             let num = parseInt(String(val).replace(/[£,k]/g, ''));
@@ -3935,7 +3975,7 @@ const companiesData = {"longList": [{"name": "Andrews Hydrographics Limited", "s
                 'name': 'Company Name',
                 'region': 'Region',
                 'employees': 'Employees',
-                'speciality': 'Key Services',
+                'ownership': 'Ownership',
                 'score': 'Score',
                 'revenue': 'Revenue',
                 'ebitda': 'EBITDA',
@@ -4074,7 +4114,7 @@ const companiesData = {"longList": [{"name": "Andrews Hydrographics Limited", "s
                     <td><strong>${company.name}</strong></td>
                     <td>${company.region || '—'}</td>
                     <td>${company.employees || '—'}</td>
-                    <td style="font-size: 12px; color: var(--text-muted);">${company.speciality || company.keyServices || '—'}</td>
+                    <td style="font-size: 12px; color: var(--text-muted);">${getOwnershipLabel(company)}</td>
                     <td>
                         <div class="score-bar ${scoreClass}">${company.score}</div>
                     </td>
