@@ -2788,13 +2788,17 @@
                 <!-- Anthropic API Key -->
                 <div class="settings-section">
                     <h3 style="cursor:pointer; padding: 10px; background: var(--bg-tertiary); border-radius: 6px; margin-bottom: 10px;" onclick="this.nextElementSibling.style.display = this.nextElementSibling.style.display === 'none' ? 'block' : 'none'">
-                        🤖 Anthropic API Key (for AI Credit Check) ▼
+                        🤖 Anthropic API Key (Claude AI) ▼
                     </h3>
                     <div>
                         <div class="form-group">
                             <label class="form-label">API Key</label>
-                            <input type="password" class="form-input" id="anthropicApiKeySettings" placeholder="sk-ant-..." onchange="localStorage.setItem('anthropicApiKey', this.value); if(document.getElementById('anthropicApiKey')) document.getElementById('anthropicApiKey').value=this.value;">
-                            <p style="font-size: 12px; color: var(--text-muted); margin-top: 5px;">Required for AI-powered credit checks and AI Assistant chat. Get your key from <a href="https://console.anthropic.com/" target="_blank">Anthropic Console</a></p>
+                            <div style="display:flex;gap:8px;">
+                                <input type="password" class="form-input" id="anthropicApiKeySettings" placeholder="sk-ant-api03-..." onchange="localStorage.setItem('anthropicApiKey', this.value.trim()); if(document.getElementById('anthropicApiKey')) document.getElementById('anthropicApiKey').value=this.value.trim();" style="flex:1;">
+                                <button class="btn" onclick="testClaudeApiKey()" id="testApiBtn" style="white-space:nowrap;">🧪 Test</button>
+                            </div>
+                            <div id="apiKeyTestResult" style="margin-top:8px;font-size:12px;"></div>
+                            <p style="font-size: 12px; color: var(--text-muted); margin-top: 5px;">Powers AI Credit Check + AI Assistant chat. Get your key from <a href="https://console.anthropic.com/settings/keys" target="_blank">console.anthropic.com/settings/keys</a></p>
                         </div>
                     </div>
                 </div>
@@ -5511,7 +5515,7 @@ Generated on ${new Date().toLocaleString()}`;
                 const name = message.substring(6).trim();
                 const company = allCompanies.find(c => c.name.toLowerCase() === name.toLowerCase());
                 if (company) {
-                    addChatMessage(`Score for ${company.name}: ${company.score}\nRevenue: £${(company.revenue || 0)/1000}m\nEBITDA: £${(company.ebitda || 0)/1000}m`, 'assistant');
+                    addChatMessage('Score for ' + company.name + ': ' + company.score + '\nRevenue: ' + formatCurrency(company.revenue) + '\nEBITDA: ' + formatCurrency(company.ebitda), 'assistant');
                 } else {
                     addChatMessage(`Company "${name}" not found`, 'assistant');
                 }
@@ -5967,6 +5971,57 @@ Generated on ${new Date().toLocaleString()}`;
         }
 
         // ============================================================================
+        // CLAUDE API - TEST KEY FUNCTION
+        // ============================================================================
+        async function testClaudeApiKey() {
+            var btn = document.getElementById('testApiBtn');
+            var result = document.getElementById('apiKeyTestResult');
+            var apiKey = (document.getElementById('anthropicApiKeySettings').value || '').trim();
+
+            if (!apiKey) {
+                result.innerHTML = '<span style="color:var(--warning);">⚠️ Please enter an API key first</span>';
+                return;
+            }
+
+            btn.disabled = true;
+            btn.textContent = '⏳ Testing...';
+            result.innerHTML = '<span style="color:var(--text-muted);">Connecting to Claude API...</span>';
+
+            try {
+                var response = await fetch('https://api.anthropic.com/v1/messages', {
+                    method: 'POST',
+                    headers: {
+                        'x-api-key': apiKey,
+                        'anthropic-version': '2023-06-01',
+                        'content-type': 'application/json',
+                        'anthropic-dangerous-direct-browser-access': 'true'
+                    },
+                    body: JSON.stringify({
+                        model: 'claude-sonnet-4-20250514',
+                        max_tokens: 32,
+                        messages: [{ role: 'user', content: 'Say OK' }]
+                    })
+                });
+
+                if (!response.ok) {
+                    var errBody = await response.json().catch(function() { return {}; });
+                    var errMsg = (errBody.error && errBody.error.message) ? errBody.error.message : response.statusText;
+                    throw new Error('API ' + response.status + ': ' + errMsg);
+                }
+
+                var data = await response.json();
+                var reply = data.content && data.content[0] ? data.content[0].text : '(empty)';
+                result.innerHTML = '<span style="color:var(--success);">✅ Connected! Model: ' + data.model + '</span>';
+                localStorage.setItem('anthropicApiKey', apiKey);
+            } catch (err) {
+                result.innerHTML = '<span style="color:var(--danger);">❌ ' + escapeHtml(err.message) + '</span>';
+            } finally {
+                btn.disabled = false;
+                btn.textContent = '🧪 Test';
+            }
+        }
+
+        // ============================================================================
         // AI-POWERED CREDIT CHECK WITH CLAUDE API
         // ============================================================================
         function openCreditCheckModalAI(companyName) {
@@ -5996,29 +6051,99 @@ Generated on ${new Date().toLocaleString()}`;
             runAICreditCheck(companyName, company, apiKey);
         }
 
+        function buildCompanyProfile(company) {
+            if (!company) return 'No company data available.';
+            var lines = [];
+            lines.push('COMPANY: ' + (company.name || 'Unknown'));
+            lines.push('STATUS: ' + (company.status || 'N/A'));
+            lines.push('REGION: ' + (company.region || 'N/A') + (company.postcode ? ' (' + company.postcode + ')' : ''));
+            if (company.founded) lines.push('FOUNDED: ' + company.founded);
+            if (company.sicCodes) lines.push('SIC CODES: ' + company.sicCodes);
+            lines.push('');
+
+            lines.push('--- FINANCIALS ---');
+            if (company.revenue) lines.push('Revenue: ' + formatCurrency(company.revenue) + (company.revenueConfidence ? ' (confidence: ' + company.revenueConfidence + ')' : ''));
+            if (company.ebitda) lines.push('EBITDA: ' + formatCurrency(company.ebitda) + (company.ebitdaConfidence ? ' (confidence: ' + company.ebitdaConfidence + ')' : ''));
+            if (company.ebitda && company.revenue) lines.push('EBITDA Margin: ' + (company.ebitda / company.revenue * 100).toFixed(1) + '%');
+            if (company.netAssets) lines.push('Net Assets: ' + formatCurrency(company.netAssets));
+            if (company.totalAssets) lines.push('Total Assets: ' + formatCurrency(company.totalAssets));
+            if (company.fixedAssets) lines.push('Fixed Assets: ' + formatCurrency(company.fixedAssets));
+            if (company.currentLiabilities) lines.push('Current Liabilities: ' + formatCurrency(company.currentLiabilities));
+            if (company.tradeDebtors) lines.push('Trade Debtors: ' + formatCurrency(company.tradeDebtors));
+            if (company.debtorDays) lines.push('Debtor Days: ' + company.debtorDays);
+            if (company.creditLimit) lines.push('Credit Limit: ' + formatCurrency(company.creditLimit));
+            if (company.dealMultiple) lines.push('Expected Deal Multiple: ' + company.dealMultiple + 'x');
+            lines.push('');
+
+            lines.push('--- PEOPLE & STRUCTURE ---');
+            if (company.employees) lines.push('Employees (CH): ' + company.employees);
+            if (company.linkedinEmployees) lines.push('Employees (LinkedIn): ' + company.linkedinEmployees);
+            if (company.directorAvgAge) lines.push('Director Avg Age: ' + company.directorAvgAge);
+            if (company.activeShareholders) lines.push('Active Shareholders: ' + company.activeShareholders);
+            if (company.ownership) lines.push('Ownership: ' + company.ownership);
+            if (company.ownershipType) lines.push('Ownership Type: ' + company.ownershipType);
+            if (company.auditor) lines.push('Auditor: ' + company.auditor);
+            lines.push('');
+
+            lines.push('--- SERVICES & MARKET ---');
+            if (company.services) lines.push('Services: ' + company.services);
+            if (company.keyServices) lines.push('Key Services: ' + company.keyServices);
+            if (company.keyClients) lines.push('Key Clients: ' + company.keyClients);
+            lines.push('');
+
+            lines.push('--- SCORING ---');
+            lines.push('Overall Score: ' + (company.score || 'N/A'));
+            lines.push('R1 Rating: ' + (company.r1 || 'N/A') + ' | R2 Rating: ' + (company.r2 || 'N/A'));
+            if (company.servicesScore) lines.push('Services Score: ' + company.servicesScore);
+            if (company.locationScore) lines.push('Location Score: ' + company.locationScore);
+            if (company.employeeScore) lines.push('Employee Score: ' + company.employeeScore);
+            if (company.ownershipScore) lines.push('Ownership Score: ' + company.ownershipScore);
+            if (company.ageScore) lines.push('Age Score: ' + company.ageScore);
+            lines.push('');
+
+            if (company.strengths || company.weaknesses || company.opportunities || company.threats) {
+                lines.push('--- SWOT ---');
+                if (company.strengths) lines.push('Strengths: ' + company.strengths);
+                if (company.weaknesses) lines.push('Weaknesses: ' + company.weaknesses);
+                if (company.opportunities) lines.push('Opportunities: ' + company.opportunities);
+                if (company.threats) lines.push('Threats: ' + company.threats);
+                lines.push('');
+            }
+
+            if (company.contact || company.approached || company.dealStage) {
+                lines.push('--- DEAL STATUS ---');
+                if (company.contact) lines.push('Contact: ' + company.contact);
+                if (company.approached) lines.push('Approached: ' + company.approached);
+                if (company.dealStage) lines.push('Deal Stage: ' + company.dealStage);
+            }
+
+            return lines.join('\n');
+        }
+
         async function runAICreditCheck(companyName, company, apiKey) {
-            const container = document.getElementById('creditScoresContainer');
-            
+            var container = document.getElementById('creditScoresContainer');
+
             try {
-                const prompt = `You are a UK M&A credit risk analyst. Assess this acquisition target:
-Company: ${companyName}
-Revenue: £${(company?.revenue || 0)/1000}k | EBITDA: £${(company?.ebitda || 0)/1000}k | Employees: ${company?.employees || 'N/A'}
-Region: ${company?.region || 'N/A'} | Ownership: ${company?.ownership || 'N/A'}
-Services: ${company?.services || 'N/A'}
+                var profile = buildCompanyProfile(company);
 
-Provide a structured credit risk assessment with:
-1. Overall Risk Rating: Very Low / Low / Moderate / High / Very High
-2. Financial Health Score (1-5, 1=best): brief explanation
-3. Filing Consistency Score (1-5): brief explanation  
-4. Age & History Score (1-5): brief explanation
-5. Governance Score (1-5): brief explanation
-6. Legal & CCJ Risk Score (1-5): brief explanation
-7. Key Concerns (bullet points)
-8. Recommendation (1-2 sentences)
+                var prompt = 'You are a senior UK M&A credit risk analyst at a PE-backed geotechnical and land surveying services platform (Survey Solutions, backed by WestBridge Capital). You are assessing acquisition targets.\n\n' +
+                    'FULL COMPANY DATA:\n' + profile + '\n\n' +
+                    'Produce a thorough credit risk assessment considering:\n' +
+                    '- Financial health (revenue, EBITDA margin, net assets, debtor days, credit limit)\n' +
+                    '- Ownership & governance (director age, shareholders, ownership structure, auditor quality)\n' +
+                    '- Operational profile (services, employees, region, SIC codes, founding year)\n' +
+                    '- Strategic fit (services overlap with geotechnical/surveying, key clients, SWOT)\n' +
+                    '- Deal readiness (contact status, deal stage, expected multiple)\n\n' +
+                    'Return ONLY valid JSON with this structure:\n' +
+                    '{"rating":"Very Low|Low|Moderate|High|Very High",' +
+                    '"scores":{"financial":{"score":N,"note":"..."},"filing":{"score":N,"note":"..."},"history":{"score":N,"note":"..."},"governance":{"score":N,"note":"..."},"legal":{"score":N,"note":"..."}},' +
+                    '"concerns":["concern1","concern2"],' +
+                    '"strengths":["strength1","strength2"],' +
+                    '"strategicFit":"brief assessment of fit with Survey Solutions platform",' +
+                    '"recommendation":"1-2 sentence recommendation"}' +
+                    '\n\nScores are 1-5 where 1=best/lowest risk, 5=worst/highest risk. Return ONLY the JSON, no other text.';
 
-Format as JSON: {"rating":"...","scores":{"financial":{"score":N,"note":"..."},"filing":{"score":N,"note":"..."},"history":{"score":N,"note":"..."},"governance":{"score":N,"note":"..."},"legal":{"score":N,"note":"..."}},"concerns":["..."],"recommendation":"..."}`;
-
-                const response = await fetch('https://api.anthropic.com/v1/messages', {
+                var response = await fetch('https://api.anthropic.com/v1/messages', {
                     method: 'POST',
                     headers: {
                         'x-api-key': apiKey,
@@ -6028,47 +6153,41 @@ Format as JSON: {"rating":"...","scores":{"financial":{"score":N,"note":"..."},"
                     },
                     body: JSON.stringify({
                         model: 'claude-sonnet-4-20250514',
-                        max_tokens: 1024,
-                        messages: [{
-                            role: 'user',
-                            content: prompt
-                        }]
+                        max_tokens: 1500,
+                        messages: [{ role: 'user', content: prompt }]
                     })
                 });
-                
+
                 if (!response.ok) {
                     var errBody = await response.json().catch(function() { return {}; });
                     var errMsg = (errBody.error && errBody.error.message) ? errBody.error.message : response.statusText;
                     throw new Error('API ' + response.status + ': ' + errMsg);
                 }
 
-                const data = await response.json();
-                const content = data.content[0].text;
-                
+                var data = await response.json();
+                var content = data.content[0].text;
+
                 // Parse JSON from response
-                const jsonMatch = content.match(/\{[\s\S]*\}/);
+                var jsonMatch = content.match(/\{[\s\S]*\}/);
                 if (!jsonMatch) {
-                    container.innerHTML = `<div style="padding: 20px; color: var(--text-muted);">
-                        <strong>AI Assessment:</strong><br><br>
-                        ${escapeHtml(content)}
-                    </div>`;
+                    container.innerHTML = '<div style="padding: 20px; color: var(--text-muted);"><strong>AI Assessment:</strong><br><br>' + escapeHtml(content) + '</div>';
                     return;
                 }
-                
-                const assessment = JSON.parse(jsonMatch[0]);
-                
+
+                var assessment = JSON.parse(jsonMatch[0]);
+
                 // Save assessment
-                const timestamp = new Date().toISOString();
+                var timestamp = new Date().toISOString();
                 saveAICreditAssessment(companyName, assessment, timestamp);
-                
+
                 // Display assessment
                 renderAICreditAssessment(assessment, timestamp);
-                
+
             } catch (error) {
-                container.innerHTML = `<div style="padding: 20px; background: var(--bg-tertiary); border-radius: 6px; color: var(--danger); border: 1px solid var(--danger);">
-                    <strong>Error:</strong> ${escapeHtml(error.message)}<br><br>
-                    <button class="btn" onclick="openCreditCheckModalAI('${companyName}')">🔄 Retry</button>
-                </div>`;
+                container.innerHTML = '<div style="padding: 20px; background: var(--bg-tertiary); border-radius: 6px; color: var(--danger); border: 1px solid var(--danger);">' +
+                    '<strong>Error:</strong> ' + escapeHtml(error.message) + '<br><br>' +
+                    '<button class="btn" onclick="openCreditCheckModalAI(\'' + companyName.replace(/'/g, "\\'") + '\')">🔄 Retry</button>' +
+                    '</div>';
             }
         }
 
@@ -6112,19 +6231,31 @@ Format as JSON: {"rating":"...","scores":{"financial":{"score":N,"note":"..."},"
             });
             html += '</div>';
             
+            // Strengths
+            if (assessment.strengths && assessment.strengths.length) {
+                html += '<div style="margin-bottom: 15px;"><strong style="color: var(--success);">Strengths:</strong><ul style="margin: 10px 0 0 20px; color: var(--text-muted);">';
+                assessment.strengths.forEach(function(s) { html += '<li>' + escapeHtml(s) + '</li>'; });
+                html += '</ul></div>';
+            }
+
             // Concerns
             if (assessment.concerns && assessment.concerns.length) {
                 html += '<div style="margin-bottom: 15px;"><strong style="color: var(--warning);">Key Concerns:</strong><ul style="margin: 10px 0 0 20px; color: var(--text-muted);">';
-                assessment.concerns.forEach(c => html += `<li>${escapeHtml(c)}</li>`);
+                assessment.concerns.forEach(function(c) { html += '<li>' + escapeHtml(c) + '</li>'; });
                 html += '</ul></div>';
             }
-            
+
+            // Strategic Fit
+            if (assessment.strategicFit) {
+                html += '<div style="padding: 12px; background: var(--bg-tertiary); border-radius: 6px; margin-bottom: 15px; border-left: 3px solid var(--primary);"><strong>Strategic Fit:</strong><br><div style="color: var(--text-muted); margin-top: 5px; font-size: 13px;">' + escapeHtml(assessment.strategicFit) + '</div></div>';
+            }
+
             // Recommendation
             if (assessment.recommendation) {
-                html += `<div style="padding: 12px; background: var(--bg-tertiary); border-radius: 6px; margin-bottom: 15px;"><strong>Recommendation:</strong><br><div style="color: var(--text-muted); margin-top: 5px; font-size: 13px;">${escapeHtml(assessment.recommendation)}</div></div>`;
+                html += '<div style="padding: 12px; background: var(--bg-tertiary); border-radius: 6px; margin-bottom: 15px;"><strong>Recommendation:</strong><br><div style="color: var(--text-muted); margin-top: 5px; font-size: 13px;">' + escapeHtml(assessment.recommendation) + '</div></div>';
             }
-            
-            html += `<button class="btn" onclick="openCreditCheckModalAI(currentCreditCheckCompany)">🔄 Refresh Assessment</button>`;
+
+            html += '<button class="btn" onclick="openCreditCheckModalAI(currentCreditCheckCompany)">🔄 Refresh Assessment</button>';
             html += '</div>';
             
             container.innerHTML = html;
@@ -6308,24 +6439,84 @@ Format as JSON: {"rating":"...","scores":{"financial":{"score":N,"note":"..."},"
         // ============================================================================
         // ENHANCED AI CHAT WITH CLAUDE API
         // ============================================================================
+        function buildPortfolioSummary() {
+            var starred = Array.from(starredCompanies);
+            var shortlisted = allCompanies.filter(function(c) { return starred.indexOf(c.name) >= 0; });
+            var totalRev = 0, totalEbitda = 0, totalEmp = 0;
+            allCompanies.forEach(function(c) {
+                totalRev += (c.revenue || 0);
+                totalEbitda += (c.ebitda || 0);
+                totalEmp += (c.employees || 0);
+            });
+
+            var lines = [];
+            lines.push('DATABASE: ' + allCompanies.length + ' companies | Total revenue: ' + formatCurrency(totalRev) + ' | Total EBITDA: ' + formatCurrency(totalEbitda) + ' | Total employees: ' + totalEmp.toLocaleString());
+            lines.push('SHORTLISTED: ' + shortlisted.length + ' companies');
+            lines.push('');
+
+            // Top 30 by score for context
+            var sorted = allCompanies.slice().sort(function(a, b) { return (b.score || 0) - (a.score || 0); });
+            lines.push('TOP COMPANIES BY SCORE:');
+            sorted.slice(0, 30).forEach(function(c) {
+                var star = starred.indexOf(c.name) >= 0 ? '★' : '';
+                lines.push(star + ' ' + c.name + ': Score=' + (c.score || 'N/A') +
+                    ', Rev=' + formatCurrency(c.revenue) +
+                    ', EBITDA=' + formatCurrency(c.ebitda) +
+                    ', Emp=' + (c.employees || '?') +
+                    ', Region=' + (c.region || '?') +
+                    ', R1=' + (c.r1 || '?') +
+                    ', Ownership=' + (c.ownership || '?').substring(0, 40));
+            });
+
+            if (shortlisted.length > 0) {
+                lines.push('');
+                lines.push('SHORTLISTED COMPANY DETAILS:');
+                shortlisted.forEach(function(c) {
+                    lines.push('');
+                    lines.push(buildCompanyProfile(c));
+                });
+            }
+
+            return lines.join('\n');
+        }
+
+        var chatHistory = [];
+
         async function processChatWithAI(message) {
-            const apiKey = (localStorage.getItem('anthropicApiKey') || '').trim();
+            var apiKey = (localStorage.getItem('anthropicApiKey') || '').trim();
             if (!apiKey) {
                 addChatMessage('API key not configured. Set your Anthropic API key in Settings.', 'assistant');
                 return;
             }
-            
-            // Build company summary for context
-            let companySummary = 'Current companies in database:\n';
-            allCompanies.slice(0, 10).forEach(c => {
-                companySummary += `- ${c.name}: Score=${c.score}, Revenue=£${(c.revenue||0)/1000}k, Region=${c.region}\n`;
-            });
-            if (allCompanies.length > 10) companySummary += `... and ${allCompanies.length - 10} more companies\n`;
-            
+
+            var systemPrompt = 'You are an expert M&A analyst embedded within the acquisition targeting tool for Survey Solutions, a PE-backed (WestBridge Capital) geotechnical and land surveying services platform in the UK.\n\n' +
+                'YOUR ROLE:\n' +
+                '- Advise on acquisition targets from the database of UK land survey, geotechnical, and environmental services companies\n' +
+                '- Provide strategic analysis: valuation, synergies, integration risks, market dynamics\n' +
+                '- Help prioritise targets based on strategic fit, financial attractiveness, and deal readiness\n' +
+                '- Answer questions about specific companies using all available data fields\n' +
+                '- Compare companies, identify patterns, flag risks\n\n' +
+                'PLATFORM CONTEXT:\n' +
+                '- Survey Solutions is building a national platform through buy-and-build in geotechnical, land surveying, and environmental services\n' +
+                '- Core entities: LSS (~£16m rev), JWG (~£1.8m), S/Tec (~£1.5m)\n' +
+                '- Backed by WestBridge Capital LP with a mandate to grow through acquisitions\n' +
+                '- Sweet spot: £0.5-3m EBITDA companies, 4-6x multiples, owner-managed businesses with aging directors\n' +
+                '- Services of interest: topographic survey, measured building survey, geotechnical investigation, environmental assessment, utility mapping, monitoring, drone/UAV, BIM/3D scanning\n\n' +
+                'DATA AVAILABLE:\n' + buildPortfolioSummary() + '\n\n' +
+                'Be concise, data-driven, and specific. Reference actual company data. Use £m/£k formatting. When comparing companies, use tables if helpful.';
+
+            // Add user message to history
+            chatHistory.push({ role: 'user', content: message });
+
+            // Keep history manageable (last 10 exchanges)
+            if (chatHistory.length > 20) {
+                chatHistory = chatHistory.slice(chatHistory.length - 20);
+            }
+
             try {
                 addChatMessage('⏳ Thinking...', 'assistant');
-                
-                const response = await fetch('https://api.anthropic.com/v1/messages', {
+
+                var response = await fetch('https://api.anthropic.com/v1/messages', {
                     method: 'POST',
                     headers: {
                         'x-api-key': apiKey,
@@ -6335,30 +6526,35 @@ Format as JSON: {"rating":"...","scores":{"financial":{"score":N,"note":"..."},"
                     },
                     body: JSON.stringify({
                         model: 'claude-sonnet-4-20250514',
-                        max_tokens: 512,
-                        messages: [{
-                            role: 'user',
-                            content: `You are an M&A assistant helping with acquisition targeting. ${companySummary}\n\nUser question: ${message}`
-                        }]
+                        max_tokens: 2048,
+                        system: systemPrompt,
+                        messages: chatHistory
                     })
                 });
-                
+
                 if (!response.ok) {
                     var errBody = await response.json().catch(function() { return {}; });
                     var errMsg = (errBody.error && errBody.error.message) ? errBody.error.message : response.statusText;
                     throw new Error('API ' + response.status + ': ' + errMsg);
                 }
 
-                const data = await response.json();
-                const lastMessage = document.querySelector('.chat-bubble.assistant:last-of-type');
+                var data = await response.json();
+                var reply = data.content[0].text;
+
+                // Add assistant reply to history
+                chatHistory.push({ role: 'assistant', content: reply });
+
+                var lastMessage = document.querySelector('.chat-bubble.assistant:last-of-type');
                 if (lastMessage && lastMessage.textContent === '⏳ Thinking...') {
-                    lastMessage.textContent = data.content[0].text;
+                    lastMessage.innerHTML = escapeHtml(reply).replace(/\n/g, '<br>');
                 }
-                
+
             } catch (error) {
-                const lastMessage = document.querySelector('.chat-bubble.assistant:last-of-type');
+                // Remove failed message from history
+                chatHistory.pop();
+                var lastMessage = document.querySelector('.chat-bubble.assistant:last-of-type');
                 if (lastMessage && lastMessage.textContent === '⏳ Thinking...') {
-                    lastMessage.textContent = '❌ API Error: ' + error.message;
+                    lastMessage.textContent = '❌ ' + error.message;
                 }
             }
         }
