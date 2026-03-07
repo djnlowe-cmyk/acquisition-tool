@@ -2266,14 +2266,14 @@
                     </select>
                 </div>
                 <div class="filter-group">
-                    <label class="filter-label">Revenue (£m)</label>
+                    <label class="filter-label">Revenue (£)</label>
                     <div class="filter-range">
                         <input type="number" class="filter-input" id="revMin" placeholder="Min" onchange="filterLongList()">
                         <input type="number" class="filter-input" id="revMax" placeholder="Max" onchange="filterLongList()">
                     </div>
                 </div>
                 <div class="filter-group">
-                    <label class="filter-label">EBITDA (£m)</label>
+                    <label class="filter-label">EBITDA (£)</label>
                     <div class="filter-range">
                         <input type="number" class="filter-input" id="ebitdaMin" placeholder="Min" onchange="filterLongList()">
                         <input type="number" class="filter-input" id="ebitdaMax" placeholder="Max" onchange="filterLongList()">
@@ -3698,9 +3698,14 @@ const companiesData = {"longList": [{"name": "Andrews Hydrographics Limited", "s
         // ============================================================================
         function formatCurrency(val) {
             if (!val || val === '—') return '—';
-            let num = parseFloat(String(val).replace(/[£,m]/g, ''));
+            let num = parseFloat(String(val).replace(/[£,mk]/g, ''));
             if (isNaN(num)) return val;
-            return '£' + Math.round(num).toLocaleString() + 'm';
+            if (Math.abs(num) >= 1000000) {
+                return '£' + (num / 1000000).toFixed(1) + 'm';
+            } else if (Math.abs(num) >= 1000) {
+                return '£' + Math.round(num / 1000).toLocaleString() + 'k';
+            }
+            return '£' + Math.round(num).toLocaleString();
         }
 
         function formatRevenuePerEmployee(val) {
@@ -4074,8 +4079,8 @@ const companiesData = {"longList": [{"name": "Andrews Hydrographics Limited", "s
                         <div class="score-bar ${scoreClass}">${company.score}</div>
                     </td>
                     <td>${company.r1 || '—'} / ${company.r2 || '—'}</td>
-                    <td>${formatCurrency(company.revenue ? Math.round(company.revenue / 1000) : '—')}</td>
-                    <td>${formatCurrency(company.ebitda ? Math.round(company.ebitda / 1000) : '—')}</td>
+                    <td>${formatCurrency(company.revenue || '—')}</td>
+                    <td>${formatCurrency(company.ebitda || '—')}</td>
                     <td>
                         ${company.revenue && company.employees ? '£' + Math.round((company.revenue / company.employees) / 1000) + 'k' : '—'}
                     </td>
@@ -4244,8 +4249,8 @@ const companiesData = {"longList": [{"name": "Andrews Hydrographics Limited", "s
                     '<td>' + buildCriterionSelect(company, 'customerConcentration') + '</td>' +
                     '<td>' + buildCriterionSelect(company, 'integratability') + '</td>' +
                     '<td>' + buildCriterionSelect(company, 'accreditations') + '</td>' +
-                    '<td>' + formatCurrency(company.revenue ? Math.round(company.revenue / 1000) : '—') + '</td>' +
-                    '<td>' + formatCurrency(company.ebitda ? Math.round(company.ebitda / 1000) : '—') + '</td>' +
+                    '<td>' + formatCurrency(company.revenue || '—') + '</td>' +
+                    '<td>' + formatCurrency(company.ebitda || '—') + '</td>' +
                     '<td>' + ebitdaMargin + '</td>' +
                     '<td>' + (company.employees || '—') + '</td>' +
                     '<td><div class="action-buttons">' +
@@ -4301,12 +4306,12 @@ const companiesData = {"longList": [{"name": "Andrews Hydrographics Limited", "s
 
                     <div class="tile-metrics">
                         <div class="tile-metric">
-                            <div class="tile-metric-label">Revenue (£m)</div>
-                            <div class="tile-metric-value">${formatCurrency(company.revenue ? Math.round(company.revenue / 1000) : '—')}</div>
+                            <div class="tile-metric-label">Revenue (£)</div>
+                            <div class="tile-metric-value">${formatCurrency(company.revenue || '—')}</div>
                         </div>
                         <div class="tile-metric">
-                            <div class="tile-metric-label">EBITDA (£m)</div>
-                            <div class="tile-metric-value">${formatCurrency(company.ebitda ? Math.round(company.ebitda / 1000) : '—')}</div>
+                            <div class="tile-metric-label">EBITDA (£)</div>
+                            <div class="tile-metric-value">${formatCurrency(company.ebitda || '—')}</div>
                         </div>
                         <div class="tile-metric">
                             <div class="tile-metric-label">Key Services</div>
@@ -4369,12 +4374,12 @@ const companiesData = {"longList": [{"name": "Andrews Hydrographics Limited", "s
             const comp = allCompanies.find(c => c.name === companyName);
             if (!comp) return;
 
-            // Normalize financial data
+            // Normalize financial data (model works in £k)
             var rawRevenue = comp.revenue || 0;
-            var realRevenue = rawRevenue > 100000 ? Math.round(rawRevenue / 1000) : Math.round(rawRevenue);
+            var realRevenue = Math.round(rawRevenue / 1000);
             var rawEbitda = comp.ebitda || 0;
-            var realEbitda = rawEbitda > 100000 ? Math.round(rawEbitda / 1000) : Math.round(rawEbitda);
-            var realMargin = realRevenue > 0 && realEbitda > 0 ? realEbitda / realRevenue : 0.15;
+            var realEbitda = Math.round(rawEbitda / 1000);
+            var realMargin = rawRevenue > 0 && rawEbitda > 0 ? rawEbitda / rawRevenue : 0.15;
 
             // Get stage 2 scores
             var s2Total = calcS2Total(comp);
@@ -4635,11 +4640,11 @@ const companiesData = {"longList": [{"name": "Andrews Hydrographics Limited", "s
                         </div>
                         <div class="detail-item">
                             <div class="detail-label">Revenue</div>
-                            <div class="detail-value">${formatCurrency(company.revenue ? Math.round(company.revenue / 1000) : '—')}</div>
+                            <div class="detail-value">${formatCurrency(company.revenue || '—')}</div>
                         </div>
                         <div class="detail-item">
                             <div class="detail-label">EBITDA</div>
-                            <div class="detail-value">${formatCurrency(company.ebitda ? Math.round(company.ebitda / 1000) : '—')}</div>
+                            <div class="detail-value">${formatCurrency(company.ebitda || '—')}</div>
                         </div>
                     </div>
                 </div>
@@ -4705,7 +4710,7 @@ const companiesData = {"longList": [{"name": "Andrews Hydrographics Limited", "s
         // EXPORT
         // ============================================================================
         function exportLongListCSV() {
-            const headers = ['Company Name', 'Region', 'Employees', 'Score', 'R1', 'R2', 'Revenue (£m)', 'EBITDA (£m)', 'Services', 'Speciality', 'Category', 'Location'];
+            const headers = ['Company Name', 'Region', 'Employees', 'Score', 'R1', 'R2', 'Revenue (£)', 'EBITDA (£)', 'Services', 'Speciality', 'Category', 'Location'];
             const rows = filteredLongList.map(c => [
                 c.name,
                 c.region,
@@ -4713,8 +4718,8 @@ const companiesData = {"longList": [{"name": "Andrews Hydrographics Limited", "s
                 c.score,
                 c.r1,
                 c.r2,
-                c.revenue ? (c.revenue / 1000).toFixed(1) : '',
-                c.ebitda ? (c.ebitda / 1000).toFixed(1) : '',
+                c.revenue ? (c.revenue / 1000000).toFixed(2) : '',
+                c.ebitda ? (c.ebitda / 1000000).toFixed(2) : '',
                 c.services,
                 c.speciality,
                 c.category,
@@ -5601,14 +5606,14 @@ Generated on ${new Date().toLocaleString()}`;
                     labels: snapshots.map(s => new Date(s.date).toLocaleDateString()),
                     datasets: [
                         {
-                            label: 'Revenue (£k)',
-                            data: snapshots.map(s => s.revenue / 1000),
+                            label: 'Revenue (£m)',
+                            data: snapshots.map(s => s.revenue / 1000000),
                             borderColor: '#10b981',
                             yAxisID: 'y'
                         },
                         {
-                            label: 'EBITDA (£k)',
-                            data: snapshots.map(s => s.ebitda / 1000),
+                            label: 'EBITDA (£m)',
+                            data: snapshots.map(s => s.ebitda / 1000000),
                             borderColor: '#f59e0b',
                             yAxisID: 'y'
                         }
@@ -5628,8 +5633,8 @@ Generated on ${new Date().toLocaleString()}`;
                     <td>${new Date(s.date).toLocaleString()}</td>
                     <td>${s.score}</td>
                     <td>${s.creditRating}</td>
-                    <td>${(s.revenue / 1000).toFixed(1)}</td>
-                    <td>${(s.ebitda / 1000).toFixed(1)}</td>
+                    <td>${(s.revenue / 1000000).toFixed(2)}</td>
+                    <td>${(s.ebitda / 1000000).toFixed(2)}</td>
                     <td>${s.employees}</td>
                 </tr>
             `).join('');
@@ -5753,8 +5758,8 @@ Generated on ${new Date().toLocaleString()}`;
             
             const metrics = [
                 { key: 'score', label: 'Overall Score' },
-                { key: 'revenue', label: 'Revenue (£k)', format: (v) => (v / 1000).toFixed(1) },
-                { key: 'ebitda', label: 'EBITDA (£k)', format: (v) => (v / 1000).toFixed(1) },
+                { key: 'revenue', label: 'Revenue (£m)', format: (v) => (v / 1000000).toFixed(2) },
+                { key: 'ebitda', label: 'EBITDA (£m)', format: (v) => (v / 1000000).toFixed(2) },
                 { key: 'employees', label: 'Employees' },
                 { key: 'region', label: 'Region' },
                 { key: 'status', label: 'Status' }
@@ -6524,12 +6529,8 @@ Format as JSON: {"rating":"...","scores":{"financial":{"score":N,"note":"..."},"
                     const alreadyPlaced = placedNames.has(c.name);
                     const s2 = calcS2Total(c);
                     const s2Max = Object.keys(secondStageCriteria).length * 3;
-                    const revRaw = c.revenue || 0;
-                    const revInK = revRaw > 100000 ? Math.round(revRaw / 1000) : Math.round(revRaw);
-                    const revStr = c.revenue ? '£' + revInK + 'k' : '—';
-                    const ebitdaRaw = c.ebitda || 0;
-                    const ebitdaInK = ebitdaRaw > 100000 ? Math.round(ebitdaRaw / 1000) : Math.round(ebitdaRaw);
-                    const ebitdaStr = c.ebitda ? '£' + ebitdaInK + 'k' : '—';
+                    const revStr = c.revenue ? formatCurrency(c.revenue) : '—';
+                    const ebitdaStr = c.ebitda ? formatCurrency(c.ebitda) : '—';
                     const margin = c.revenue && c.ebitda ? (c.ebitda / c.revenue * 100).toFixed(0) + '%' : '—';
                     const opacity = alreadyPlaced ? 'opacity:0.4;' : '';
                     const draggable = alreadyPlaced ? 'false' : 'true';
@@ -6644,10 +6645,10 @@ Format as JSON: {"rating":"...","scores":{"financial":{"score":N,"note":"..."},"
                     if (!comp) return;
                     // Pull real financial data from the company
                     const rawEbitda = comp.ebitda || 0;
-                    const realEbitda = rawEbitda > 100000 ? Math.round(rawEbitda / 1000) : Math.round(rawEbitda);
+                    const realEbitda = Math.round(rawEbitda / 1000);
                     const rawRevenue = comp.revenue || 0;
-                    const realRevenue = rawRevenue > 100000 ? Math.round(rawRevenue / 1000) : Math.round(rawRevenue);
-                    const realMargin = realRevenue > 0 && realEbitda > 0 ? realEbitda / realRevenue : 0.15;
+                    const realRevenue = Math.round(rawRevenue / 1000);
+                    const realMargin = rawRevenue > 0 && rawEbitda > 0 ? rawEbitda / rawRevenue : 0.15;
                     // Pull second-stage scoring
                     const s2Scores = getShortListScore(company);
                     const s2Total = calcS2Total(comp);
