@@ -2743,62 +2743,36 @@
             <div class="card">
                 <div class="card-title">⚙️ Application Settings</div>
                 
-                <!-- Companies House API Key -->
+                <!-- API Keys - buried in submenu -->
                 <div class="settings-section">
-                    <h3 style="cursor:pointer; padding: 10px; background: var(--bg-tertiary); border-radius: 6px; margin-bottom: 10px;" onclick="this.nextElementSibling.style.display = this.nextElementSibling.style.display === 'none' ? 'block' : 'none'">
-                        🔑 Companies House API Key ▼
+                    <h3 style="cursor:pointer; padding: 10px; background: var(--bg-tertiary); border-radius: 6px; margin-bottom: 10px;" onclick="var el=document.getElementById('apiKeysSubmenu'); el.style.display = el.style.display === 'none' ? 'block' : 'none'; this.querySelector('.arrow').textContent = el.style.display === 'none' ? '▶' : '▼';">
+                        🔐 API Integrations <span class="arrow" style="float:right;">▶</span>
                     </h3>
-                    <div>
-                        <div class="form-group">
-                            <label class="form-label">API Key</label>
-                            <input type="password" class="form-input" id="chApiKeySettings" placeholder="Enter your Companies House API key" onchange="localStorage.setItem('chApiKey', this.value)">
-                            <p style="font-size: 12px; color: var(--text-muted); margin-top: 5px;">Get your key from <a href="https://developer.company-information.service.gov.uk/" target="_blank">Companies House Developer Hub</a></p>
-                        </div>
-                    </div>
-                </div>
+                    <div id="apiKeysSubmenu" style="display:none; padding: 10px; background: var(--bg-secondary); border-radius: 6px; border: 1px solid var(--border-color);">
+                        <p style="font-size: 12px; color: var(--text-muted); margin-bottom: 15px;">⚠️ These keys are stored in your browser only. Do not change unless you know what you're doing.</p>
 
-                <!-- Endole API Key -->
-                <div class="settings-section">
-                    <h3 style="cursor:pointer; padding: 10px; background: var(--bg-tertiary); border-radius: 6px; margin-bottom: 10px;" onclick="this.nextElementSibling.style.display = this.nextElementSibling.style.display === 'none' ? 'block' : 'none'">
-                        📊 Endole API Key ▼
-                    </h3>
-                    <div>
-                        <div class="form-group">
-                            <label class="form-label">API Key</label>
-                            <input type="password" class="form-input" id="endoleApiKeySettings" placeholder="Enter your Endole API key" onchange="localStorage.setItem('endoleApiKey', this.value)">
-                            <p style="font-size: 12px; color: var(--text-muted); margin-top: 5px;">Used for enriched company data. Get your key from <a href="https://app.endole.co.uk/" target="_blank">Endole</a></p>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Apollo API Key -->
-                <div class="settings-section">
-                    <h3 style="cursor:pointer; padding: 10px; background: var(--bg-tertiary); border-radius: 6px; margin-bottom: 10px;" onclick="this.nextElementSibling.style.display = this.nextElementSibling.style.display === 'none' ? 'block' : 'none'">
-                        🚀 Apollo.io API Key ▼
-                    </h3>
-                    <div>
-                        <div class="form-group">
-                            <label class="form-label">API Key</label>
-                            <input type="password" class="form-input" id="apolloApiKeySettings" placeholder="Enter your Apollo.io API key" onchange="localStorage.setItem('apolloApiKey', this.value)">
-                            <p style="font-size: 12px; color: var(--text-muted); margin-top: 5px;">Free tier available. Get your key from <a href="https://app.apollo.io/#/settings/integrations/api" target="_blank">Apollo.io Settings → API</a></p>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Anthropic API Key -->
-                <div class="settings-section">
-                    <h3 style="cursor:pointer; padding: 10px; background: var(--bg-tertiary); border-radius: 6px; margin-bottom: 10px;" onclick="this.nextElementSibling.style.display = this.nextElementSibling.style.display === 'none' ? 'block' : 'none'">
-                        🤖 Anthropic API Key (Claude AI) ▼
-                    </h3>
-                    <div>
-                        <div class="form-group">
-                            <label class="form-label">API Key</label>
+                        <div style="margin-bottom: 15px;">
+                            <label class="form-label" style="font-size:12px;">🤖 Anthropic (Claude AI)</label>
                             <div style="display:flex;gap:8px;">
-                                <input type="password" class="form-input" id="anthropicApiKeySettings" placeholder="sk-ant-api03-..." onchange="localStorage.setItem('anthropicApiKey', this.value.trim()); if(document.getElementById('anthropicApiKey')) document.getElementById('anthropicApiKey').value=this.value.trim();" style="flex:1;">
-                                <button class="btn" onclick="testClaudeApiKey()" id="testApiBtn" style="white-space:nowrap;">🧪 Test</button>
+                                <input type="password" class="form-input" id="anthropicApiKeySettings" placeholder="sk-ant-api03-..." onchange="localStorage.setItem('anthropicApiKey', this.value.trim());" style="flex:1;font-size:12px;">
+                                <button class="btn" onclick="testClaudeApiKey()" id="testApiBtn" style="white-space:nowrap;font-size:12px;">🧪 Test</button>
                             </div>
-                            <div id="apiKeyTestResult" style="margin-top:8px;font-size:12px;"></div>
-                            <p style="font-size: 12px; color: var(--text-muted); margin-top: 5px;">Powers AI Credit Check + AI Assistant chat. Get your key from <a href="https://console.anthropic.com/settings/keys" target="_blank">console.anthropic.com/settings/keys</a></p>
+                            <div id="apiKeyTestResult" style="margin-top:4px;font-size:11px;"></div>
+                        </div>
+
+                        <div style="margin-bottom: 15px;">
+                            <label class="form-label" style="font-size:12px;">🔑 Companies House</label>
+                            <input type="password" class="form-input" id="chApiKeySettings" placeholder="Companies House API key" onchange="localStorage.setItem('chApiKey', this.value)" style="font-size:12px;">
+                        </div>
+
+                        <div style="margin-bottom: 15px;">
+                            <label class="form-label" style="font-size:12px;">📊 Endole</label>
+                            <input type="password" class="form-input" id="endoleApiKeySettings" placeholder="Endole API key" onchange="localStorage.setItem('endoleApiKey', this.value)" style="font-size:12px;">
+                        </div>
+
+                        <div>
+                            <label class="form-label" style="font-size:12px;">🚀 Apollo.io</label>
+                            <input type="password" class="form-input" id="apolloApiKeySettings" placeholder="Apollo.io API key" onchange="localStorage.setItem('apolloApiKey', this.value)" style="font-size:12px;">
                         </div>
                     </div>
                 </div>
@@ -2926,34 +2900,20 @@
 
         <!-- AI ASSISTANT TAB -->
         <div id="chat" class="tab-content">
-            <div class="card" style="margin-bottom: 20px;">
-                <div class="card-title">💬 AI Assistant</div>
-                <p style="color: var(--text-muted); font-size: 14px; margin-bottom: 15px;">This chat interface helps you manage company data. You can use commands to search, update, and analyze companies. Type 'help' to see available commands.</p>
-                
-                <div class="form-group">
-                    <label class="form-label">Anthropic API Key (Optional)</label>
-                    <input type="password" class="form-input" id="anthropicApiKey" placeholder="sk-ant-... (for actual Claude AI)" onchange="localStorage.setItem('anthropicApiKey', this.value); if(document.getElementById('anthropicApiKeySettings')) document.getElementById('anthropicApiKeySettings').value=this.value;">
-                    <p style="font-size: 12px; color: var(--text-muted); margin-top: 5px;">Optional: Provide your API key to enable actual Claude AI responses. Without it, only local commands work.</p>
-                </div>
-            </div>
-
-            <div class="chat-container">
+            <div class="chat-container" style="height: calc(100vh - 200px);">
                 <div class="chat-messages" id="chatMessages">
                     <div class="chat-bubble assistant">
-                        <strong>Welcome to the AI Assistant!</strong><br><br>
-                        I can help you manage your M&A targeting data. Available commands:<br><br>
-                        <code style="display: block; margin-top: 5px;">add company [name]</code> - Add a new company<br>
-                        <code style="display: block;">update [company] [field] [value]</code> - Update a field<br>
-                        <code style="display: block;">score [company]</code> - Show company scores<br>
-                        <code style="display: block;">star [company]</code> - Star/unstar a company<br>
-                        <code style="display: block;">search [query]</code> - Search companies<br>
-                        <code style="display: block;">export</code> - Export data to CSV<br>
-                        <code style="display: block;">help</code> - Show all commands<br><br>
-                        Type any command to get started!
+                        <strong>M&A Assistant</strong><br><br>
+                        I'm your AI-powered M&A analyst for the Survey Solutions platform. Ask me anything about your acquisition targets:<br><br>
+                        <span style="color:var(--text-muted);">Try:</span> "Which shortlisted companies have the highest EBITDA margin?"<br>
+                        <span style="color:var(--text-muted);">Try:</span> "Compare the top 5 targets by revenue"<br>
+                        <span style="color:var(--text-muted);">Try:</span> "What are the risks with owner-managed businesses in our pipeline?"<br>
+                        <span style="color:var(--text-muted);">Try:</span> "Suggest an acquisition sequence for the next 12 months"<br><br>
+                        <span style="font-size:12px;color:var(--text-muted);">Also supports commands: search, score, star, export, help</span>
                     </div>
                 </div>
                 <div class="chat-input-area">
-                    <input type="text" class="chat-input" id="chatInput" placeholder="Type a command or message...">
+                    <input type="text" class="chat-input" id="chatInput" placeholder="Ask about targets, strategy, valuations...">
                     <button class="chat-send-btn" onclick="sendChatMessage()">Send</button>
                 </div>
             </div>
@@ -3780,10 +3740,10 @@ const companiesData = {"longList": [{"name": "Andrews Hydrographics Limited", "s
             if (typeof populateTrendsSelect === 'function') populateTrendsSelect();
             if (typeof populateCompetitiveSelects === 'function') populateCompetitiveSelects();
 
-            // Sync API key to Chat tab field on load
-            const savedAiKey = localStorage.getItem('anthropicApiKey') || '';
-            if (savedAiKey && document.getElementById('anthropicApiKey')) {
-                document.getElementById('anthropicApiKey').value = savedAiKey;
+            // Sync API key to Settings field on load
+            var savedAiKey = localStorage.getItem('anthropicApiKey') || '';
+            if (savedAiKey && document.getElementById('anthropicApiKeySettings')) {
+                document.getElementById('anthropicApiKeySettings').value = savedAiKey;
             }
 
         }
